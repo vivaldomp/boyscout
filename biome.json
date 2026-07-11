@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
-  "files": { "includes": ["**", "!**/goldens/**"] },
+  "files": { "includes": ["**", "!**/node_modules/**", "!**/dist/**", "!**/goldens/**"] },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
