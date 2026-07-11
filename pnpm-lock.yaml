@@ -36,6 +36,15 @@ importers:
         specifier: 2.5.3
         version: 2.5.3
 
+  packages/planner:
+    dependencies:
+      '@boyscout/determinism':
+        specifier: workspace:*
+        version: link:../determinism
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+
   packages/schemas:
     dependencies:
       zod:
