@@ -36,6 +36,18 @@ importers:
         specifier: 2.5.3
         version: 2.5.3
 
+  packages/guardrails:
+    dependencies:
+      '@biomejs/js-api':
+        specifier: 6.0.0
+        version: 6.0.0(@biomejs/wasm-nodejs@2.5.3)
+      '@biomejs/wasm-nodejs':
+        specifier: 2.5.3
+        version: 2.5.3
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+
   packages/planner:
     dependencies:
       '@boyscout/determinism':
