@@ -35,5 +35,7 @@ describe("canonicalJson", () => {
   it("rejects undefined array elements and unsupported types", () => {
     expect(() => canonicalJson([undefined])).toThrow();
     expect(() => canonicalJson(10n)).toThrow();
+    expect(() => canonicalJson(() => {})).toThrow();
+    expect(() => canonicalJson(Symbol("x"))).toThrow();
   });
 });
