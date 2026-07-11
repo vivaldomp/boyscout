@@ -19,9 +19,12 @@ This document has been hardened through an architectural pressure-test. The deci
 | **D3a** | Determinism is an **enforced subsystem, not a convention**: a core primitives module (canonical-JSON, byte-collation sort, hermetic formatter, byte-writer) is the only sanctioned path for serialize/sort/format/write. |
 | **D3b** | Byte-for-byte identity is **cross-OS** (Linux/Mac/Windows), given spec + `boyscout.lock`, **proven by multi-OS golden-file CI**. The formatter is the long-pole risk. |
 | **D4** | **Incremental execution + content-addressable caching are cut from v1** (output is disposable and regenerated wholesale in milliseconds). Deferred optimization — add when generation is *measurably* slow. Replayability and inspectability of the Execution Graph are retained. |
-| **D5** | **Test proportionality:** v1 = golden-file determinism (the thesis) + seam contract tests + Guardrail 422 tests + Registry contract tests. **Parser fuzzing and full agent→browser E2E are deferred** until those surfaces are real. |
+| **D5** | **Test proportionality:** v1 = golden-file determinism (the thesis) + seam contract tests + Guardrail 422 tests + Registry contract tests. **Full agent→browser E2E is *in* v1** (the full authoring surface exists to test it — see **D9**). **Parser fuzzing remains deferred** — the DSL round-trip guarantee (**D10**) is carried by property tests in v1; fuzzing is later hardening. |
 | **D6** | **"Model independence" reframed:** the guarantee is *reproducibility given a Specification* and *governance that holds regardless of model* — **not** identical output across different models (different model → different valid spec → different valid output). |
-| **D7 (open)** | **Go-to-market marquee** (Material-as-headline vs React-as-headline) is an open **product** question, decoupled from build order (**D1**). Not an architecture decision; deferred. |
+| **D7** | **Go-to-market marquee = Material/Angular** (governed enterprise Angular: the §16/§19.1 story). **React/Astryx is the technical foundation + high-fidelity reference**, built first (**D1**) but not the headline. Build-primary ≠ marquee. |
+| **D8** | **Parallel execution is *in* v1.** The Execution Graph runs nodes in parallel within dependency bounds, with **deterministic reassembly to graph order before emit** (§11.3). Note: this is a *single-run* speedup; D4's *cross-run* caching/incremental stay **out** (independent axes). |
+| **D9** | **Full authoring surface is *in* v1:** closed questionnaire engine (`@boyscout/questionnaire`, `enabledWhen`) + SSE live workspace + Renderer preview + approval gate (§18 as written). This pulls full E2E into v1 (**D5**). |
+| **D10** | **Full byte-stable DSL round-trip is *in* v1.** `.openui` DSL files are **persisted, first-class, human-editable artifacts**; `parse → bind → validate → serialize` is byte-stable **both directions** and determinism-covered (**D3a**). Source-of-truth reconciliation: the **AST is canonical**; `boyscout-spec.json` is its authoritative persisted form (the generation source of truth); `.openui` is a byte-stable editable projection kept in lockstep by the round-trip guarantee. |
 
 ---
 
@@ -267,6 +270,7 @@ The Execution Graph is the deterministic dependency DAG produced by the Planner.
 | Property | Description |
 |---|---|
 | **Deterministic scheduling** | Same graph always executes in the same order. |
+| **Parallel execution** *(v1, D8)* | Independent nodes run concurrently within dependency bounds; outputs are **reassembled to graph order before emit** (§11.3), so parallelism never affects output bytes. Single-run speedup only. |
 | **Replayability** | The graph can be serialized, stored, and re-executed to reproduce identical output. |
 | **Inspectability** | The graph can be visualized and audited before execution. |
 | **Incremental execution** *(deferred, D4)* | *Not in v1.* Future optimization: re-execute only changed nodes. v1 regenerates `.running/` wholesale — fast enough that caching is unwarranted. |
@@ -537,7 +541,7 @@ templates:                   # optional overrides; defaults come from the Bridge
 Two first-class Bridges (build order and roles per **D1**):
 
 - **`@boyscout/bridge-astryx-react`** — React + Astryx. The **first-built platform** and the **core high-fidelity path** (preview ≈ output). Provides the `<Renderer/>` that is **core authoring-stage infrastructure** for all previews (§1.3). Self-verifiable Registry from Astryx's typed catalog. Capabilities: component, route, query, store. Because it is entangled with the authoring core, it proves little about agnosticism — it is home turf.
-- **`@boyscout/bridge-material`** — Angular + Material Design. The **proof-of-agnosticism bridge**, built second: a clean, independent Bridge that passes the same Runtime contract suite (§20) to prove the core knows no framework. Self-verifiable Registry from the framework's typed catalog. Capabilities: component, form, route, http. Its previews are honest structural wireframes (§1.3). May be the go-to-market marquee even though it is built second.
+- **`@boyscout/bridge-material`** — Angular + Material Design. The **proof-of-agnosticism bridge**, built second: a clean, independent Bridge that passes the same Runtime contract suite (§20) to prove the core knows no framework. Self-verifiable Registry from the framework's typed catalog. Capabilities: component, form, route, http. Its previews are honest structural wireframes (§1.3). **It is the go-to-market marquee** (**D7** — governed enterprise Angular is the headline sell) even though it is built second.
 
 > **Agnosticism is proven by Material alone.** One clean cross-framework Bridge passing the Runtime contract suite *is* the proof; the "two bridges prove it" framing overclaims, because Astryx shares the authoring core.
 
@@ -583,7 +587,7 @@ The Runtime discovers all extensions at `resolve()` time. No Runtime code change
 
 ## 16. Enterprise Value Proposition
 
-BoyScout addresses enterprise software engineering challenges that AI code generators cannot:
+The go-to-market marquee is the **Material/Angular bridge** (**D7**): governed enterprise Angular is the headline sell, even though React/Astryx is built first as the technical foundation (**D1**). BoyScout addresses enterprise software engineering challenges that AI code generators cannot:
 
 | Concern | How BoyScout Addresses It |
 |---|---|
@@ -604,7 +608,8 @@ BoyScout addresses enterprise software engineering challenges that AI code gener
 
 - **Syntax:** `id = Component(arg1, arg2)`, **positional arguments** (never alphabetical order/arbitrary keys).
 - **One AST, two consumers:** the `@openuidev/lang-core` parser (line-oriented, streaming-first) produces the typed AST, which feeds (a) the React `<Renderer/>` → Astryx for the **preview** and (b) the target Bridge's **generation**. The `<Renderer/>` is React and serves **only the preview**; production output follows the Bridge's generation path.
-- **Validation and Round-Trip:** Zod 4 validates nodes/trees; `parse → bind → validate → serialize` is byte-stable, covered by property testing (fuzzing deferred to post-v1, **D5**).
+- **Persisted, first-class artifact (D10):** `.openui` DSL files are persisted, versioned, and human-editable — a byte-stable **editable projection** of the AST. The **AST is canonical**; `boyscout-spec.json` is its authoritative persisted form (the generation source of truth); `.openui` stays in lockstep via the round-trip guarantee.
+- **Validation and Round-Trip:** Zod 4 validates nodes/trees; `parse → bind → validate → serialize` is byte-stable **in both directions** and determinism-covered (**D3a/D10**), carried by property tests in v1. (Fuzzing is later hardening — **D5**.)
 
 ### 17.2. Dumb Templates
 
@@ -669,7 +674,7 @@ pnpm Workspaces. **Agnostic core** × **Bridges per stack**.
 
 ## 20. Testing Strategy
 
-- **Parser/DSL:** byte-stable round-trip property tests. *(Fuzzing deferred, **D5** — add once the parser surface is real and matters.)*
+- **Parser/DSL:** byte-stable **both-directions** round-trip property tests (**D10**), since `.openui` is a persisted first-class artifact. *(Fuzzing deferred as later hardening, **D5**.)*
 - **Determinism (the thesis):** byte-by-byte golden-file snapshots of `.running/`, run on **Linux + macOS + Windows** in CI (**D3b**) — the formatter is the long-pole target. Covers `.running/` only; durable `src/` is excluded (**D2b**).
 - **Determinism primitives (D3a):** unit tests for canonical-JSON, byte-collation ordering, hermetic-formatter (ignores ambient config), and byte-writer (LF/UTF-8/no-BOM/no-timestamp).
 - **Seam (D2d):** contract tests per logic-bearing capability — **regen preserves the human `src/` file**, a **signature change yields a compile error**, and post-guardrails verify contract + lint.
@@ -677,7 +682,7 @@ pnpm Workspaces. **Agnostic core** × **Bridges per stack**.
 - **Guardrails:** positive/negative cases proving blocking (422) on pre and post violations.
 - **Agnosticism:** the **Material bridge** running the same Runtime contract suite as Astryx is the proof the core knows no framework (**D1** — Astryx is home turf and proves little; agnosticism rests on Material).
 - **Execution Graph:** serialization round-trip tests; deterministic ordering verification (byte-collation tie-break).
-- **E2E:** *(deferred to post-v1, **D5**)* Playwright of the full flow agent → CLI → browser → approval → generate — stood up once the authoring surface stabilizes; v1 leans on the golden/seam/guardrail/contract suites above.
+- **E2E:** *(in v1, **D5/D9**)* Playwright of the full flow agent → CLI → browser → approval → generate — the full authoring surface (questionnaire + SSE + preview, **D9**) exists in v1, so it is covered end-to-end.
 
 ---
 
@@ -690,7 +695,7 @@ pnpm Workspaces. **Agnostic core** × **Bridges per stack**.
 
 ## 22. Scope and Non-Goals
 
-**In scope (v1):** agnostic generation Runtime + React/Astryx authoring core (incl. the `<Renderer/>`) + **two Bridges** (Astryx/React first-built + core high-fidelity path; Material Design/Angular as the proof-of-agnosticism bridge, built second — **D1**); visual design-gate; double barrier Guardrails; **both capability tiers** — declarative and logic-bearing, the latter with the durable-seam `src/` layer (**D2a–D2d**); Runtime Protocol (incl. the two-mode `emit()` — **D2b**); Execution Graph; Provider architecture; the determinism-primitives subsystem (**D3a**).
+**In scope (v1):** agnostic generation Runtime + React/Astryx authoring core (incl. the `<Renderer/>`) + **two Bridges** (Astryx/React first-built + core high-fidelity path; Material Design/Angular as the proof-of-agnosticism bridge, built second — **D1**); visual design-gate; double barrier Guardrails; **both capability tiers** — declarative and logic-bearing, the latter with the durable-seam `src/` layer (**D2a–D2d**); Runtime Protocol (incl. the two-mode `emit()` — **D2b**); Execution Graph **with parallel execution + deterministic reassembly** (**D8**); Provider architecture; the determinism-primitives subsystem (**D3a**); the **full authoring surface** — closed questionnaire engine + SSE live workspace + Renderer preview + approval gate (**D9**), covered by full E2E; **persisted `.openui` DSL** with byte-stable both-directions round-trip (**D10**).
 
 **Out of scope (Non-Goals):**
 
