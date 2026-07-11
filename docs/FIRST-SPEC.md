@@ -409,7 +409,7 @@ Third parties extend a Bridge by adding new Providers without modifying existing
 The differentiator is not generating code — it is **preventing the agent from straying from the standard**. Enforcement in a **double barrier**:
 
 - **Pre-generation (prevention):** the agent can only **express what the Registry allows**. Components outside the design system, non-existent props, or disabled Capabilities are simply not representable in the Specification. Restriction at the source.
-- **Post-generation (proof):** the emitted Assets undergo **AST/lint** verification against the Bridge's rules. Any violation **fails the gate (422)** and blocks emission.
+- **Post-generation (proof):** the emitted Assets undergo **AST/lint** verification (engine: **Biome**, the same pinned Rust tool that backs the formatter — §11/§19.3) against the Bridge's rules. Any violation **fails the gate (422)** and blocks emission.
 
 Guardrails are **defined by the Bridge** (each framework/design system has its own) and **parameterized** in `boyscout.config.yaml`. This is what makes the product valuable for enterprises: standardization, architecture, and compliance guaranteed by design, regardless of the AI model.
 
@@ -432,7 +432,7 @@ The complete set of inputs that determine output:
 | **Bridge version** | ✓ | The Bridge package version (e.g., `@boyscout/bridge-material@1.2.0`) |
 | **Registry version** | ✓ | The Capability catalog version (pinned by Bridge version) |
 | **Template version** | ✓ | Template content hashes (pinned by Bridge version) |
-| **Formatter version + config** | ✓ | The formatter package version **and** its resolved config hash, run hermetically (§11.3) |
+| **Formatter version + config** | ✓ | The **Biome** version **and** its resolved config hash, run hermetically (§11.3) |
 | **Guardrail version** | ✓ | Guardrail rule versions (pinned by Bridge version) |
 | **Resolved dependency closure** | ✓ | `boyscout.lock` pins the **full transitive closure** of anything that touches output (a formatter plugin's transitive dep can shift bytes), not just direct versions |
 
@@ -448,7 +448,7 @@ The complete set of inputs that determine output:
 - **Canonical serialization.** `JSON.stringify` is order-sensitive and sorts numeric-string keys; the spec checksum is unstable without it. A **canonical-JSON** primitive (sorted keys, fixed number formatting, defined null/undefined policy) is the *only* serializer used for hashing/emit.
 - **Ordering discipline.** Every `Map`/`Set`/`Object.keys` collection that feeds output is **sorted before iteration** via a **byte/codepoint collator** — never ambient `localeCompare` (locale-dependent). The Planner's topological sort uses the same byte-collation tie-break.
 - **Deterministic reassembly.** Parallel node execution is allowed for speed, but results are **reassembled into graph order before emit**.
-- **Hermetic formatter.** Pinned version **and** explicit config **with ambient config-file discovery disabled** — the formatter never picks up a stray `.prettierrc` from a parent directory.
+- **Hermetic formatter (Biome).** The formatter is **Biome** (pinned Rust binary), invoked with explicit config **and ambient config-file discovery disabled** — it never picks up a stray `biome.json` from a parent directory. Biome is chosen for cross-OS byte-stability (the D3b long-pole) and doubles as the post-barrier lint engine (§10), so format + lint are one pinned tool.
 - **Byte-writer.** All output is written **LF-only, UTF-8 no BOM**, fixed final-newline. **No timestamps, no absolute paths / usernames / `homedir()`, no env-dependent content** in generated files.
 - **Normalized generation environment.** `TZ=UTC`, fixed locale; generation branches never read ambient env.
 - **Stable hashing.** Pinned algorithm (SHA-256) computed over **canonical** bytes; the spec checksum (and any future content-addressing, D4) depends entirely on canonical serialization.
@@ -664,7 +664,7 @@ pnpm Workspaces. **Agnostic core** × **Bridges per stack**.
 
 ### 19.3. Technology Stack
 
-- **Core:** Node.js v20+; pnpm; global *strict* TypeScript; Zod 4.
+- **Core:** Node.js v20+; pnpm; global *strict* TypeScript; Zod 4; **Biome** (pinned) as the single format + lint tool.
 - **Backend (Daemon):** Hono — statics, transactional REST, SSE, and direct CLI integration.
 - **Frontend App:** React v19 + Tailwind v4; preview via Astryx + `<Renderer/>`.
 - **Templates & Parsing:** typed catalog (Bridge Registry); Eta (`autoEscape:false`) for dumb Templates.
