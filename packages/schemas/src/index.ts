@@ -89,3 +89,33 @@ export interface CapabilityContract<In = unknown, Out = unknown> {
   seam?: SeamContractT;
   metadata: Record<string, unknown>;
 }
+
+/** An emitted file before it is written to disk. `content` is raw at generate(), formatted after format(). */
+export interface Asset {
+  path: string;
+  content: string;
+}
+
+/** A post-generation guardrail check over one asset. Returns violation messages ([] = pass). */
+export type AssetRule = (asset: Asset) => string[];
+
+/** Implements one capability: turns a feature into raw assets. Bridge-owned; never calls the Runtime. */
+export interface Provider {
+  readonly capability: string;
+  generate(feature: FeatureT): Asset[];
+}
+
+/** The bridge's typed catalog: which capabilities and AST node types it can express, and the providers. */
+export interface BridgeRegistry {
+  readonly capabilities: readonly string[];
+  readonly componentTypes: readonly string[];
+  providerFor(capability: string): Provider | undefined;
+}
+
+/** A complete binding of a Platform to the Runtime. The Runtime consumes this by interface — never imports it. */
+export interface Bridge {
+  readonly id: string;
+  readonly platform: string;
+  readonly registry: BridgeRegistry;
+  readonly postRules: readonly AssetRule[];
+}
