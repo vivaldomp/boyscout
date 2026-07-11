@@ -27,6 +27,31 @@ const logicBearing: CapabilityContract<ServiceInput, { scaffold: string }> = {
   metadata: {},
 };
 
+const badTier: CapabilityContract<{ x: number }, { y: number }> = {
+  id: "x",
+  version: "1",
+  // @ts-expect-error — invalid tier literal must not typecheck
+  tier: "bogus",
+  inputs: { x: 1 },
+  outputs: { y: 1 },
+  validators: [],
+  constraints: {},
+  metadata: {},
+};
+
+// @ts-expect-error — missing required field (version) must not typecheck
+const missingField: CapabilityContract<{ x: number }, { y: number }> = {
+  id: "x",
+  tier: "declarative",
+  inputs: { x: 1 },
+  outputs: { y: 1 },
+  validators: [],
+  constraints: {},
+  metadata: {},
+};
+
 // Reference the values so they are not elided.
 void declarative;
 void logicBearing;
+void badTier;
+void missingField;

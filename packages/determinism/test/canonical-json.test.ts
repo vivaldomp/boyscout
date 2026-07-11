@@ -37,5 +37,11 @@ describe("canonicalJson", () => {
     expect(() => canonicalJson(10n)).toThrow();
     expect(() => canonicalJson(() => {})).toThrow();
     expect(() => canonicalJson(Symbol("x"))).toThrow();
+    expect(() => canonicalJson(new Date())).toThrow();
+    expect(() => canonicalJson(new Map())).toThrow();
+    expect(() => canonicalJson(new Set())).toThrow();
+  });
+  it("serializes null-prototype plain objects", () => {
+    expect(canonicalJson(Object.assign(Object.create(null), { b: 1, a: 2 }))).toBe('{"a":2,"b":1}');
   });
 });

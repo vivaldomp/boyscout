@@ -26,6 +26,13 @@ function serialize(v: unknown): string {
   }
 
   if (t === "object") {
+    const proto = Object.getPrototypeOf(v);
+    if (proto !== null && proto !== Object.prototype) {
+      throw new Error(
+        `canonicalJson: unsupported non-plain object (${(v as object).constructor?.name ?? "unknown"})`,
+      );
+    }
+
     const obj = v as Record<string, unknown>;
     const keys = Object.keys(obj)
       .filter((k) => obj[k] !== undefined)

@@ -12,6 +12,8 @@ const VIRTUAL_PATH: Record<FormatLang, string> = {
 };
 
 // Explicit in-memory config — the hermetic contract. No ambient biome.json is ever read.
+// NOTE: these formatter settings must stay in sync with the root biome.json formatter block.
+// Duplicated deliberately — format() is hermetic and must not read ambient config.
 const CONFIG = {
   formatter: {
     enabled: true,
