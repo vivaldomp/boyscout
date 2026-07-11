@@ -33,7 +33,7 @@ function instance(): { biome: Biome; projectKey: ProjectKey } {
   if (cached) return cached;
   const biome = new Biome();
   const { projectKey } = biome.openProject("/");
-  biome.applyConfiguration(projectKey, CONFIG as never);
+  biome.applyConfiguration(projectKey, CONFIG);
   cached = { biome, projectKey };
   return cached;
 }

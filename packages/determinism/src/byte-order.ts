@@ -6,7 +6,9 @@ export function byteCompare(a: string, b: string): -1 | 0 | 1 {
   const bb = encoder.encode(b);
   const n = Math.min(ba.length, bb.length);
   for (let i = 0; i < n; i++) {
+    // biome-ignore lint/style/noNonNullAssertion: i < n <= ba.length guarantees defined
     const x = ba[i]!;
+    // biome-ignore lint/style/noNonNullAssertion: i < n <= bb.length guarantees defined
     const y = bb[i]!;
     if (x !== y) return x < y ? -1 : 1;
   }

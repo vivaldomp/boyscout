@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
-  "files": { "includes": ["**", "!**/node_modules/**", "!**/dist/**", "!**/goldens/**"] },
+  "files": { "includes": ["**", "!**/node_modules", "!**/dist", "!**/goldens"] },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -11,5 +11,5 @@
   "javascript": {
     "formatter": { "quoteStyle": "double", "semicolons": "always", "trailingCommas": "all" }
   },
-  "linter": { "enabled": true, "rules": { "recommended": true } }
+  "linter": { "enabled": true, "rules": { "preset": "recommended" } }
 }
