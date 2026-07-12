@@ -4,24 +4,29 @@ import { astryxOnly } from "./astryx-only.js";
 import { COMPONENTS } from "./catalog.js";
 import { componentProvider } from "./provider.js";
 import { SERVICE_NODE_TYPES, serviceProvider } from "./service-provider.js";
+import { STORE_NODE_TYPES, storeProvider } from "./store-provider.js";
 
 export { COMPONENTS } from "./catalog.js";
 export { astryxOnly } from "./astryx-only.js";
 
 export const registry: BridgeRegistry = {
-  capabilities: ["component", "service"],
+  capabilities: ["component", "service", "store"],
   nodeTypesFor: (capability) =>
     capability === "component"
       ? COMPONENTS
       : capability === "service"
         ? SERVICE_NODE_TYPES
-        : [],
+        : capability === "store"
+          ? STORE_NODE_TYPES
+          : [],
   providerFor: (capability) =>
     capability === "component"
       ? componentProvider
       : capability === "service"
         ? serviceProvider
-        : undefined,
+        : capability === "store"
+          ? storeProvider
+          : undefined,
 };
 
 export const bridge: Bridge = {
