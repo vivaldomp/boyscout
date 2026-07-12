@@ -29,6 +29,9 @@ importers:
       '@boyscout/determinism':
         specifier: workspace:*
         version: link:../../packages/determinism
+      '@boyscout/dialect':
+        specifier: workspace:*
+        version: link:../../packages/dialect
       '@boyscout/guardrails':
         specifier: workspace:*
         version: link:../../packages/guardrails
