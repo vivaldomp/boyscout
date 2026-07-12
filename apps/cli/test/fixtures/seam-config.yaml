@@ -1,0 +1,6 @@
+platform: react
+bridge: astryx-react
+capabilities:
+  - service
+  - store
+  - http

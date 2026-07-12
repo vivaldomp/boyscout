@@ -1,0 +1,60 @@
+{
+  "version": "1",
+  "features": [
+    {
+      "id": "user-service",
+      "capability": "service",
+      "tree": {
+        "type": "Service",
+        "props": { "name": "UserService" },
+        "children": [
+          {
+            "type": "Method",
+            "props": { "name": "getUsers", "params": "", "returns": "Promise<string[]>" }
+          }
+        ]
+      },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    },
+    {
+      "id": "cart-store",
+      "capability": "store",
+      "tree": {
+        "type": "Store",
+        "props": { "name": "Cart", "state": "{ items: string[] }" },
+        "children": [
+          { "type": "Action", "props": { "name": "addItem", "payload": "string" } },
+          { "type": "Action", "props": { "name": "clear", "payload": "void" } }
+        ]
+      },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    },
+    {
+      "id": "users-api",
+      "capability": "http",
+      "tree": {
+        "type": "Http",
+        "props": { "name": "UsersApi" },
+        "children": [
+          {
+            "type": "Endpoint",
+            "props": {
+              "name": "getUsers",
+              "method": "GET",
+              "path": "/users",
+              "response": "string[]"
+            }
+          }
+        ]
+      },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    }
+  ],
+  "metadata": { "bridge": "astryx-react", "platform": "react", "checksum": "" }
+}
