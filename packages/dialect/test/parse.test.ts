@@ -35,7 +35,9 @@ describe("parseOpenuiRaw", () => {
   });
 
   it("parses string escapes and boolean/null literals", () => {
-    const file = parseOpenuiRaw(`spec version=1 bridge=b platform=p\ncomponent x =\n  Text("a \\"q\\" z", "y")\n`);
+    const file = parseOpenuiRaw(
+      `spec version=1 bridge=b platform=p\ncomponent x =\n  Text("a \\"q\\" z", "y")\n`,
+    );
     const feature = file.features[0];
     if (!feature) throw new Error("fixture");
     expect(feature.node.args).toEqual(['a "q" z', "y"]);
@@ -44,18 +46,22 @@ describe("parseOpenuiRaw", () => {
   it("throws with a line number on an unterminated string", () => {
     const bad = `spec version=1 bridge=b platform=p\ncomponent x =\n  Text("oops)\n`;
     expect(() => parseOpenuiRaw(bad)).toThrow(DialectError);
-    try { parseOpenuiRaw(bad); } catch (e) { expect((e as DialectError).line).toBe(3); }
+    try {
+      parseOpenuiRaw(bad);
+    } catch (e) {
+      expect((e as DialectError).line).toBe(3);
+    }
   });
 
   it("throws on an unexpected token where a literal is required", () => {
-    expect(() => parseOpenuiRaw(`spec version=1 bridge=b platform=p\ncomponent x =\n  Text(body)\n`)).toThrow(
-      /expected a literal/,
-    );
+    expect(() =>
+      parseOpenuiRaw(`spec version=1 bridge=b platform=p\ncomponent x =\n  Text(body)\n`),
+    ).toThrow(/expected a literal/);
   });
 
   it("throws on a brace/paren mismatch", () => {
-    expect(() => parseOpenuiRaw(`spec version=1 bridge=b platform=p\ncomponent x =\n  Card {\n`)).toThrow(
-      DialectError,
-    );
+    expect(() =>
+      parseOpenuiRaw(`spec version=1 bridge=b platform=p\ncomponent x =\n  Card {\n`),
+    ).toThrow(DialectError);
   });
 });

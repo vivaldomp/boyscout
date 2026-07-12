@@ -50,8 +50,15 @@ function tokenize(src: string): Token[] {
   // rather than src[k] (which types as string | undefined) for all character reads.
   while (i < n) {
     const c = src.charAt(i);
-    if (c === "\n") { line++; i++; continue; }
-    if (c === " " || c === "\t" || c === "\r") { i++; continue; }
+    if (c === "\n") {
+      line++;
+      i++;
+      continue;
+    }
+    if (c === " " || c === "\t" || c === "\r") {
+      i++;
+      continue;
+    }
     if (c === "(" || c === ")" || c === "{" || c === "}" || c === "," || c === "=") {
       tokens.push({ kind: "punct", value: c, num: 0, line });
       i++;
@@ -73,7 +80,11 @@ function tokenize(src: string): Token[] {
           i += 2;
           continue;
         }
-        if (d === '"') { closed = true; i++; break; }
+        if (d === '"') {
+          closed = true;
+          i++;
+          break;
+        }
         if (d === "\n") break;
         s += d;
         i++;
@@ -132,7 +143,8 @@ class Parser {
   }
   private expectIdent(): Token {
     const t = this.next();
-    if (t.kind !== "ident") throw new DialectError(`expected identifier but found "${t.value}"`, t.line);
+    if (t.kind !== "ident")
+      throw new DialectError(`expected identifier but found "${t.value}"`, t.line);
     return t;
   }
 
@@ -145,7 +157,8 @@ class Parser {
 
   private parseHeader(): Record<string, string> {
     const kw = this.next();
-    if (kw.value !== "spec") throw new DialectError(`expected "spec" header but found "${kw.value}"`, kw.line);
+    if (kw.value !== "spec")
+      throw new DialectError(`expected "spec" header but found "${kw.value}"`, kw.line);
     const header: Record<string, string> = {};
     while (this.isHeaderKv()) {
       const key = this.expectIdent();

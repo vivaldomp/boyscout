@@ -42,6 +42,8 @@ function serializeNode(node: AstNodeT, depth: number, reg: DialectRegistry): str
 /** SpecificationT -> canonical .openui text (2-space indent, LF, trailing newline). Deterministic by construction. */
 export function serializeOpenui(spec: SpecificationT, reg: DialectRegistry): string {
   const header = `spec version=${spec.version} bridge=${spec.metadata.bridge} platform=${spec.metadata.platform}`;
-  const features = spec.features.map((f) => `${f.capability} ${f.id} =\n${serializeNode(f.tree, 1, reg)}`);
+  const features = spec.features.map(
+    (f) => `${f.capability} ${f.id} =\n${serializeNode(f.tree, 1, reg)}`,
+  );
   return `${header}\n\n${features.join("\n\n")}\n`;
 }

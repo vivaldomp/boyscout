@@ -1,5 +1,11 @@
 import type { AstNodeT, FeatureT, SpecificationT } from "@boyscout/schemas";
-import { DialectError, type Literal, type RawFeature, type RawFile, type RawNode } from "./parse.js";
+import {
+  DialectError,
+  type Literal,
+  type RawFeature,
+  type RawFile,
+  type RawNode,
+} from "./parse.js";
 
 export interface DialectRegistry {
   readonly capabilities: readonly string[];
@@ -14,7 +20,10 @@ function bindNode(
   reg: DialectRegistry,
 ): AstNodeT {
   if (!allowed.has(raw.type)) {
-    throw new DialectError(`unknown node type "${raw.type}" for capability "${capability}"`, raw.line);
+    throw new DialectError(
+      `unknown node type "${raw.type}" for capability "${capability}"`,
+      raw.line,
+    );
   }
   const params = reg.paramsFor(raw.type);
   if (raw.args.length > params.length) {
@@ -59,7 +68,8 @@ export function bind(file: RawFile, reg: DialectRegistry): SpecificationT {
   const bridge = h.bridge;
   const platform = h.platform;
   if (version === undefined || bridge === undefined || platform === undefined) {
-    const missing = version === undefined ? "version" : bridge === undefined ? "bridge" : "platform";
+    const missing =
+      version === undefined ? "version" : bridge === undefined ? "bridge" : "platform";
     throw new DialectError(`missing "spec ${missing}=..." in header`, 1);
   }
   return {

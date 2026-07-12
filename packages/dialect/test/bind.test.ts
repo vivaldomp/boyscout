@@ -64,8 +64,8 @@ describe("parseOpenui", () => {
   });
 
   it("rejects a missing header field", () => {
-    expect(() => parseOpenui(`spec version=1 bridge=b\ncomponent x =\n  Card\n`, mockRegistry)).toThrow(
-      /missing "spec platform/,
-    );
+    expect(() =>
+      parseOpenui(`spec version=1 bridge=b\ncomponent x =\n  Card\n`, mockRegistry),
+    ).toThrow(/missing "spec platform/);
   });
 });

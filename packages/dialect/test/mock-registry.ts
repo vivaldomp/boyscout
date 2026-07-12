@@ -8,11 +8,19 @@ const NODE_TYPES: Record<string, readonly string[]> = {
 };
 
 const PARAMS: Record<string, readonly string[]> = {
-  VStack: ["gap"], HStack: ["gap"], Card: [], Grid: ["columns"],
-  Heading: ["level", "text"], Text: ["type", "text"], Button: ["variant", "text"],
-  Service: ["name"], Method: ["name", "params", "returns"],
-  Store: ["name", "state"], Action: ["name", "payload"],
-  Http: ["name"], Endpoint: ["name", "method", "path", "response"],
+  VStack: ["gap"],
+  HStack: ["gap"],
+  Card: [],
+  Grid: ["columns"],
+  Heading: ["level", "text"],
+  Text: ["type", "text"],
+  Button: ["variant", "text"],
+  Service: ["name"],
+  Method: ["name", "params", "returns"],
+  Store: ["name", "state"],
+  Action: ["name", "payload"],
+  Http: ["name"],
+  Endpoint: ["name", "method", "path", "response"],
 };
 
 /** Mirrors the astryx bridge table; keeps the dialect package free of any bridge dependency in tests. */

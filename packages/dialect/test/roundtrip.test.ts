@@ -19,33 +19,58 @@ function feature(capability: string, id: string, tree: SpecificationT["features"
   return { id, capability, tree, annotations: {}, props: {}, approved: true };
 }
 function spec(f: SpecificationT["features"][number]): SpecificationT {
-  return { version: "1", features: [f], metadata: { bridge: "astryx-react", platform: "react", checksum: "" } };
+  return {
+    version: "1",
+    features: [f],
+    metadata: { bridge: "astryx-react", platform: "react", checksum: "" },
+  };
 }
 
 const CORPUS: SpecificationT[] = [
-  spec(feature("component", "user-card", {
-    type: "Card",
-    children: [{
-      type: "VStack", props: { gap: 2 },
+  spec(
+    feature("component", "user-card", {
+      type: "Card",
       children: [
-        { type: "Heading", props: { level: 3, text: "Profile" } },
-        { type: "Text", props: { type: "body", text: "Member since 2026" } },
-        { type: "Button", props: { variant: "primary", text: "Edit" } },
+        {
+          type: "VStack",
+          props: { gap: 2 },
+          children: [
+            { type: "Heading", props: { level: 3, text: "Profile" } },
+            { type: "Text", props: { type: "body", text: "Member since 2026" } },
+            { type: "Button", props: { variant: "primary", text: "Edit" } },
+          ],
+        },
       ],
-    }],
-  })),
-  spec(feature("service", "user-service", {
-    type: "Service", props: { name: "UserService" },
-    children: [{ type: "Method", props: { name: "getUsers", params: "", returns: "Promise<User[]>" } }],
-  })),
-  spec(feature("store", "cart", {
-    type: "Store", props: { name: "Cart", state: "CartState" },
-    children: [{ type: "Action", props: { name: "addItem", payload: "Item" } }],
-  })),
-  spec(feature("http", "users-api", {
-    type: "Http", props: { name: "UsersApi" },
-    children: [{ type: "Endpoint", props: { name: "list", method: "GET", path: "/users", response: "User[]" } }],
-  })),
+    }),
+  ),
+  spec(
+    feature("service", "user-service", {
+      type: "Service",
+      props: { name: "UserService" },
+      children: [
+        { type: "Method", props: { name: "getUsers", params: "", returns: "Promise<User[]>" } },
+      ],
+    }),
+  ),
+  spec(
+    feature("store", "cart", {
+      type: "Store",
+      props: { name: "Cart", state: "CartState" },
+      children: [{ type: "Action", props: { name: "addItem", payload: "Item" } }],
+    }),
+  ),
+  spec(
+    feature("http", "users-api", {
+      type: "Http",
+      props: { name: "UsersApi" },
+      children: [
+        {
+          type: "Endpoint",
+          props: { name: "list", method: "GET", path: "/users", response: "User[]" },
+        },
+      ],
+    }),
+  ),
 ];
 
 describe("serializeOpenui + round-trip laws", () => {
