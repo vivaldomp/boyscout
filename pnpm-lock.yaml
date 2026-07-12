@@ -26,6 +26,12 @@ importers:
       '@boyscout/bridge-astryx-react':
         specifier: workspace:*
         version: link:../../packages/bridges/bridge-astryx-react
+      '@boyscout/determinism':
+        specifier: workspace:*
+        version: link:../../packages/determinism
+      '@boyscout/guardrails':
+        specifier: workspace:*
+        version: link:../../packages/guardrails
       '@boyscout/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
