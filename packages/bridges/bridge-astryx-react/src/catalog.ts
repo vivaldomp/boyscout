@@ -9,7 +9,5 @@ export const COMPONENTS = [
   "Button",
 ] as const;
 
-export const COMPONENT_SET: ReadonlySet<string> = new Set<string>(COMPONENTS);
-
 /** Components whose `text` prop is rendered as the JSX child rather than an attribute. */
 export const TEXT_CHILD: ReadonlySet<string> = new Set(["Heading", "Text", "Button"]);

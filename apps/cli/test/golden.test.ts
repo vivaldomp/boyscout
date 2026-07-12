@@ -27,6 +27,6 @@ describe("cross-OS golden: fixture spec -> byte-identical component", () => {
     }
     const expectedBytes = readFileSync(goldenPath);
     // Compare hashes of the canonical bytes — the determinism thesis, proven per-OS in CI.
-    expect(hash(actualBytes)).toBe(hash(new Uint8Array(expectedBytes)));
+    expect(hash(actualBytes)).toBe(hash(expectedBytes));
   });
 });

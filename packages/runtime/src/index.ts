@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join, normalize } from "node:path";
+import { isAbsolute, join, normalize } from "node:path";
 import { format, type FormatLang, writeBytes } from "@boyscout/determinism";
 import { checkAssets } from "@boyscout/guardrails";
 import { plan } from "@boyscout/planner";
@@ -104,7 +104,7 @@ export function emit(assets: readonly Asset[], outDir: string): string[] {
     if (
       asset.path.includes("..") ||
       normalize(asset.path) !== asset.path ||
-      asset.path.startsWith("/")
+      isAbsolute(asset.path)
     ) {
       throw new Error(`path traversal rejected: "${asset.path}"`);
     }
