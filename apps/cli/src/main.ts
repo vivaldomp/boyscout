@@ -26,7 +26,9 @@ export function main(argv: string[]): number {
     return 0;
   } catch (err) {
     if (err instanceof GateError) {
-      process.stderr.write(`422 gate failed:\n${err.violations.map((v) => `  - ${v}`).join("\n")}\n`);
+      process.stderr.write(
+        `422 gate failed:\n${err.violations.map((v) => `  - ${v}`).join("\n")}\n`,
+      );
     } else {
       process.stderr.write(`error: ${(err as Error).message}\n`);
     }

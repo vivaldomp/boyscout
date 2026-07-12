@@ -17,7 +17,10 @@ function result(violations: string[]): GuardrailResultT {
 }
 
 /** Pre-barrier: every AST node type in every feature tree must exist in the bridge catalog. */
-export function checkExpressible(spec: SpecificationT, allowedTypes: readonly string[]): GuardrailResultT {
+export function checkExpressible(
+  spec: SpecificationT,
+  allowedTypes: readonly string[],
+): GuardrailResultT {
   const allowed = new Set(allowedTypes);
   const violations: string[] = [];
   for (const feature of spec.features) {
@@ -31,7 +34,10 @@ export function checkExpressible(spec: SpecificationT, allowedTypes: readonly st
 }
 
 /** Post-barrier engine: run every injected rule over every asset; any violation fails the gate (422). */
-export function checkAssets(assets: readonly Asset[], rules: readonly AssetRule[]): GuardrailResultT {
+export function checkAssets(
+  assets: readonly Asset[],
+  rules: readonly AssetRule[],
+): GuardrailResultT {
   const violations: string[] = [];
   for (const asset of assets) {
     for (const rule of rules) violations.push(...rule(asset));

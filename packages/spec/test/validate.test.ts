@@ -6,8 +6,14 @@ const ALLOWED = ["Card", "Text"];
 const good = {
   version: "1",
   features: [
-    { id: "f1", capability: "component", tree: { type: "Card", children: [{ type: "Text" }] },
-      annotations: {}, props: {}, approved: true },
+    {
+      id: "f1",
+      capability: "component",
+      tree: { type: "Card", children: [{ type: "Text" }] },
+      annotations: {},
+      props: {},
+      approved: true,
+    },
   ],
   metadata: { bridge: "astryx-react", platform: "react", checksum: "" },
 };

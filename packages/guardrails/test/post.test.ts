@@ -4,7 +4,7 @@ import { biomeLint, checkAssets } from "../src/index.js";
 
 const clean: Asset = {
   path: "Ok.tsx",
-  content: 'export function Ok() {\n  return <span>hi</span>;\n}\n',
+  content: "export function Ok() {\n  return <span>hi</span>;\n}\n",
 };
 
 describe("checkAssets (post-barrier engine)", () => {

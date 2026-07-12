@@ -3,7 +3,13 @@ import { join, normalize } from "node:path";
 import { format, type FormatLang, writeBytes } from "@boyscout/determinism";
 import { checkAssets } from "@boyscout/guardrails";
 import { plan } from "@boyscout/planner";
-import { BoyscoutConfig, type Asset, type Bridge, type BoyscoutConfigT, type FeatureT } from "@boyscout/schemas";
+import {
+  BoyscoutConfig,
+  type Asset,
+  type Bridge,
+  type BoyscoutConfigT,
+  type FeatureT,
+} from "@boyscout/schemas";
 import { validateSpec } from "@boyscout/spec";
 import { parse as parseYaml } from "yaml";
 
@@ -95,7 +101,11 @@ export function emit(assets: readonly Asset[], outDir: string): string[] {
   const runningDir = join(outDir, ".running");
   const emitted: string[] = [];
   for (const asset of assets) {
-    if (asset.path.includes("..") || normalize(asset.path) !== asset.path || asset.path.startsWith("/")) {
+    if (
+      asset.path.includes("..") ||
+      normalize(asset.path) !== asset.path ||
+      asset.path.startsWith("/")
+    ) {
       throw new Error(`path traversal rejected: "${asset.path}"`);
     }
     const full = join(runningDir, asset.path);

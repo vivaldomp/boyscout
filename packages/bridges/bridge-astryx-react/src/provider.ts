@@ -16,7 +16,9 @@ function toPascalCase(id: string): string {
 }
 
 function renderAttrs(props: Record<string, unknown>): string {
-  const keys = Object.keys(props).filter((k) => k !== "text").sort(byteCompare);
+  const keys = Object.keys(props)
+    .filter((k) => k !== "text")
+    .sort(byteCompare);
   return keys
     .map((k) => {
       const v = props[k];

@@ -37,10 +37,10 @@ describe("componentProvider.generate", () => {
     );
   });
 
-  it("renders props as JSX attributes (number={n}, string=\"s\") and `text` as the child", () => {
+  it('renders props as JSX attributes (number={n}, string="s") and `text` as the child', () => {
     const [asset] = componentProvider.generate(feature);
     expect(asset?.content).toContain("<VStack gap={2}>");
-    expect(asset?.content).toContain('<Heading level={3}>Profile</Heading>');
+    expect(asset?.content).toContain("<Heading level={3}>Profile</Heading>");
     expect(asset?.content).toContain('<Text type="body">Hello</Text>');
   });
 });

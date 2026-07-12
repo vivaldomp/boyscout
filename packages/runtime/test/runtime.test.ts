@@ -17,7 +17,10 @@ const fakeBridge: Bridge = {
         ? {
             capability: "component",
             generate: (f: FeatureT): Asset[] => [
-              { path: `${f.id}.tsx`, content: `export const ${f.id} = () => <Card><Text>hi</Text></Card>;` },
+              {
+                path: `${f.id}.tsx`,
+                content: `export const ${f.id} = () => <Card><Text>hi</Text></Card>;`,
+              },
             ],
           }
         : undefined,
@@ -31,8 +34,14 @@ function spec(type = "Card") {
   return {
     version: "1",
     features: [
-      { id: "widget", capability: "component", tree: { type, children: [{ type: "Text" }] },
-        annotations: {}, props: {}, approved: true },
+      {
+        id: "widget",
+        capability: "component",
+        tree: { type, children: [{ type: "Text" }] },
+        annotations: {},
+        props: {},
+        approved: true,
+      },
     ],
     metadata: { bridge: "astryx-react", platform: "react", checksum: "" },
   };
@@ -73,7 +82,9 @@ describe("buildAssets", () => {
         ...fakeBridge.registry,
         providerFor: () => ({
           capability: "component",
-          generate: (): Asset[] => [{ path: "widget.tsx", content: "export const widget = () => <div>x</div>;" }],
+          generate: (): Asset[] => [
+            { path: "widget.tsx", content: "export const widget = () => <div>x</div>;" },
+          ],
         }),
       },
     };
@@ -109,6 +120,8 @@ describe("generate", () => {
       },
     };
     const outDir = mkdtempSync(join(tmpdir(), "boyscout-"));
-    expect(() => generate({ specInput: spec(), config, bridge: escaping, outDir })).toThrow(/traversal|\.\./);
+    expect(() => generate({ specInput: spec(), config, bridge: escaping, outDir })).toThrow(
+      /traversal|\.\./,
+    );
   });
 });

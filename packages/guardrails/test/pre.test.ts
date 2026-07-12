@@ -7,7 +7,9 @@ const ALLOWED = ["Card", "VStack", "Text"];
 function spec(tree: SpecificationT["features"][number]["tree"]): SpecificationT {
   return {
     version: "1",
-    features: [{ id: "f1", capability: "component", tree, annotations: {}, props: {}, approved: true }],
+    features: [
+      { id: "f1", capability: "component", tree, annotations: {}, props: {}, approved: true },
+    ],
     metadata: { bridge: "astryx-react", platform: "react", checksum: "" },
   };
 }

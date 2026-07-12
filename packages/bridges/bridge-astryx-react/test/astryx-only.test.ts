@@ -4,7 +4,10 @@ import { astryxOnly } from "../src/astryx-only.js";
 
 describe("astryxOnly (post-barrier design-system rule)", () => {
   it("passes JSX using only Astryx (capitalized) components", () => {
-    const ok: Asset = { path: "Ok.tsx", content: "export const A = () => <Card><Text>x</Text></Card>;" };
+    const ok: Asset = {
+      path: "Ok.tsx",
+      content: "export const A = () => <Card><Text>x</Text></Card>;",
+    };
     expect(astryxOnly(ok)).toEqual([]);
   });
 
