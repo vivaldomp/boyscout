@@ -1,0 +1,7 @@
+import { <%= it.imports %> } from "@astryxdesign/core";
+
+export function <%= it.name %>() {
+  return (
+<%= it.body %>
+  );
+}
