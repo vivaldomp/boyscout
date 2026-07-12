@@ -63,6 +63,29 @@ describe("buildAssets", () => {
       expect((e as GateError).violations.some((v) => v.includes("Blob"))).toBe(true);
     }
   });
+
+  it("throws GateError(422) at the post-barrier when generated content violates a postRule", () => {
+    // Pre-barrier passes (Card/Text are valid componentTypes); the provider then
+    // emits `<div` content, which fakeBridge.postRules rejects. Must throw before emit.
+    const divBridge: Bridge = {
+      ...fakeBridge,
+      registry: {
+        ...fakeBridge.registry,
+        providerFor: () => ({
+          capability: "component",
+          generate: (): Asset[] => [{ path: "widget.tsx", content: "export const widget = () => <div>x</div>;" }],
+        }),
+      },
+    };
+    try {
+      buildAssets({ specInput: spec(), config, bridge: divBridge });
+      expect.unreachable("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(GateError);
+      expect((e as GateError).violations.length).toBeGreaterThan(0);
+      expect((e as GateError).violations.some((v) => v.includes("div"))).toBe(true);
+    }
+  });
 });
 
 describe("generate", () => {

@@ -49,7 +49,7 @@ function langOf(path: string): FormatLang {
   return lang;
 }
 
-/** resolve() -> plan() -> validate() -> generate() -> format() -> verify(). Returns formatted assets; no emit. */
+/** resolve() -> validate() -> plan() -> generate() -> format() -> verify(). Returns formatted assets; no emit. */
 export function buildAssets(opts: BuildOpts): Asset[] {
   const { config, bridge } = opts;
 
