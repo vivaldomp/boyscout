@@ -1,0 +1,17 @@
+{
+  "name": "@boyscout/guardrails",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@biomejs/js-api": "6.0.0",
+    "@biomejs/wasm-nodejs": "2.5.3",
+    "@boyscout/schemas": "workspace:*"
+  }
+}

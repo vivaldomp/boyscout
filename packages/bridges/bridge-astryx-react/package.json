@@ -1,0 +1,20 @@
+{
+  "name": "@boyscout/bridge-astryx-react",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@astryxdesign/core": "0.1.4",
+    "@boyscout/codegen": "workspace:*",
+    "@boyscout/determinism": "workspace:*",
+    "@boyscout/guardrails": "workspace:*",
+    "@boyscout/schemas": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}
