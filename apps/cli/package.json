@@ -1,0 +1,13 @@
+{
+  "name": "@boyscout/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": { "boyscout": "./src/bin.ts" },
+  "exports": { ".": "./src/main.ts" },
+  "scripts": { "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "dependencies": {
+    "@boyscout/bridge-astryx-react": "workspace:*",
+    "@boyscout/runtime": "workspace:*"
+  }
+}
