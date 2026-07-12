@@ -76,6 +76,18 @@ importers:
         specifier: 2.5.3
         version: 2.5.3
 
+  packages/dialect:
+    dependencies:
+      '@boyscout/determinism':
+        specifier: workspace:*
+        version: link:../determinism
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      '@boyscout/spec':
+        specifier: workspace:*
+        version: link:../spec
+
   packages/guardrails:
     dependencies:
       '@biomejs/js-api':
