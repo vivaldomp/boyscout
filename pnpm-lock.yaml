@@ -63,6 +63,15 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
+  packages/spec:
+    dependencies:
+      '@boyscout/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+
 packages:
 
   '@biomejs/biome@2.5.3':
