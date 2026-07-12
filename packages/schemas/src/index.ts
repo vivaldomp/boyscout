@@ -94,6 +94,8 @@ export interface CapabilityContract<In = unknown, Out = unknown> {
 export interface Asset {
   path: string;
   content: string;
+  /** true = durable human-owned stub (src/, create-if-absent); false/undefined = disposable scaffold (.running/). */
+  durable?: boolean;
 }
 
 /** A post-generation guardrail check over one asset. Returns violation messages ([] = pass). */

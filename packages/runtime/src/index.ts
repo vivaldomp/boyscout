@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, normalize } from "node:path";
 import { format, type FormatLang, writeBytes } from "@boyscout/determinism";
 import { checkAssets } from "@boyscout/guardrails";
@@ -28,9 +28,6 @@ export interface BuildOpts {
 }
 export interface GenerateOpts extends BuildOpts {
   outDir: string;
-}
-export interface GenerateResult {
-  emitted: string[];
 }
 
 /** load(): parse + validate boyscout.config.yaml. Fail-fast on invalid config. */
@@ -85,39 +82,74 @@ export function buildAssets(opts: BuildOpts): Asset[] {
     const provider = bridge.registry.providerFor(feature.capability);
     if (!provider) throw new Error(`no provider for capability "${feature.capability}"`);
     for (const raw of provider.generate(feature)) {
-      assets.push({ path: raw.path, content: format(raw.content, langOf(raw.path)) });
+      assets.push({
+        path: raw.path,
+        content: format(raw.content, langOf(raw.path)),
+        ...(raw.durable !== undefined ? { durable: raw.durable } : {}),
+      });
     }
   }
 
-  // verify(): post-barrier.
-  const gate = checkAssets(assets, bridge.postRules);
+  // verify(): post-barrier — scaffold assets only (durable human bodies are lint-level, D2d).
+  const gate = checkAssets(
+    assets.filter((a) => !a.durable),
+    bridge.postRules,
+  );
   if (!gate.ok) throw new GateError(gate.violations);
 
   return assets;
 }
 
-/** emit(): disposable write to <outDir>/.running via writeBytes (LF/UTF-8/no-BOM). Path-traversal shielded. */
-export function emit(assets: readonly Asset[], outDir: string): string[] {
-  const runningDir = join(outDir, ".running");
-  const emitted: string[] = [];
-  for (const asset of assets) {
-    if (
-      asset.path.includes("..") ||
-      normalize(asset.path) !== asset.path ||
-      isAbsolute(asset.path)
-    ) {
-      throw new Error(`path traversal rejected: "${asset.path}"`);
-    }
-    const full = join(runningDir, asset.path);
-    mkdirSync(join(full, ".."), { recursive: true });
-    writeFileSync(full, writeBytes(asset.content));
-    emitted.push(full);
-  }
-  return emitted;
+export interface GenerateResult {
+  emitted: string[];
+  preserved: string[];
 }
 
-/** The full protocol: build then emit. */
+export interface EmitResult {
+  scaffolds: string[];
+  durablesCreated: string[];
+  durablesPreserved: string[];
+}
+
+function assertSafe(p: string): void {
+  if (p.includes("..") || normalize(p) !== p || isAbsolute(p)) {
+    throw new Error(`path traversal rejected: "${p}"`);
+  }
+}
+
+/**
+ * emit() — two modes (D2b). Scaffolds (durable !== true) overwrite into <outDir>/.running (idempotent).
+ * Durables create-if-absent into <outDir>/src — an existing human file is preserved, never overwritten.
+ * Both targets path-traversal shielded.
+ */
+export function emit(assets: readonly Asset[], outDir: string): EmitResult {
+  const scaffolds: string[] = [];
+  const durablesCreated: string[] = [];
+  const durablesPreserved: string[] = [];
+  for (const asset of assets) {
+    assertSafe(asset.path);
+    if (asset.durable) {
+      const full = join(outDir, "src", asset.path);
+      if (existsSync(full)) {
+        durablesPreserved.push(full);
+        continue;
+      }
+      mkdirSync(join(full, ".."), { recursive: true });
+      writeFileSync(full, writeBytes(asset.content));
+      durablesCreated.push(full);
+    } else {
+      const full = join(outDir, ".running", asset.path);
+      mkdirSync(join(full, ".."), { recursive: true });
+      writeFileSync(full, writeBytes(asset.content));
+      scaffolds.push(full);
+    }
+  }
+  return { scaffolds, durablesCreated, durablesPreserved };
+}
+
+/** The full protocol: build then emit. Reports newly emitted paths and preserved human files. */
 export function generate(opts: GenerateOpts): GenerateResult {
   const assets = buildAssets(opts);
-  return { emitted: emit(assets, opts.outDir) };
+  const { scaffolds, durablesCreated, durablesPreserved } = emit(assets, opts.outDir);
+  return { emitted: [...scaffolds, ...durablesCreated], preserved: durablesPreserved };
 }

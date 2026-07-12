@@ -97,6 +97,25 @@ describe("buildAssets", () => {
       expect((e as GateError).violations.some((v) => v.includes("div"))).toBe(true);
     }
   });
+
+  it("verify() skips durable assets — the post-barrier is scaffold-only (D2d)", () => {
+    const b: Bridge = {
+      ...fakeBridge,
+      registry: {
+        ...fakeBridge.registry,
+        providerFor: () => ({
+          capability: "component",
+          generate: (): Asset[] => [
+            { path: "Widget.tsx", content: "export const W = () => <Card/>;\n", durable: false },
+            { path: "impl.ts", content: 'export const x = () => "<div";\n', durable: true },
+          ],
+        }),
+      },
+    };
+    // The durable asset contains "<div" (which fakeBridge.postRules rejects); it must be ignored.
+    const assets = buildAssets({ specInput: spec(), config, bridge: b });
+    expect(assets.some((a) => a.durable)).toBe(true);
+  });
 });
 
 describe("generate", () => {
