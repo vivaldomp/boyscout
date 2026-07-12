@@ -3,6 +3,7 @@ import type { Bridge, BridgeRegistry } from "@boyscout/schemas";
 import { astryxOnly } from "./astryx-only.js";
 import { COMPONENTS } from "./catalog.js";
 import { HTTP_NODE_TYPES, httpProvider } from "./http-provider.js";
+import { paramsFor } from "./params.js";
 import { componentProvider } from "./provider.js";
 import { SERVICE_NODE_TYPES, serviceProvider } from "./service-provider.js";
 import { STORE_NODE_TYPES, storeProvider } from "./store-provider.js";
@@ -22,6 +23,7 @@ export const registry: BridgeRegistry = {
           : capability === "http"
             ? HTTP_NODE_TYPES
             : [],
+  paramsFor,
   providerFor: (capability) =>
     capability === "component"
       ? componentProvider
