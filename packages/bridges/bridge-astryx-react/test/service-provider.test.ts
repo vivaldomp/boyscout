@@ -8,7 +8,9 @@ const feature: FeatureT = {
   tree: {
     type: "Service",
     props: { name: "UserService" },
-    children: [{ type: "Method", props: { name: "getUsers", params: "", returns: "Promise<string[]>" } }],
+    children: [
+      { type: "Method", props: { name: "getUsers", params: "", returns: "Promise<string[]>" } },
+    ],
   },
   annotations: {},
   props: {},

@@ -29,7 +29,9 @@ describe("http provider", () => {
     expect(scaffold?.path).toBe("http/UsersApi.ts");
     expect(stub?.path).toBe("http/users-api.ts");
     expect(scaffold?.content).toContain("interface UsersApiTransforms");
-    expect(scaffold?.content).toContain("const transforms: UsersApiTransforms = usersApiTransforms");
+    expect(scaffold?.content).toContain(
+      "const transforms: UsersApiTransforms = usersApiTransforms",
+    );
     expect(scaffold?.content).toContain('fetch("/users", { method: "GET" })');
     expect(stub?.content).toContain("getUsers(raw: unknown): string[]");
   });

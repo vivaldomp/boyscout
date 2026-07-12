@@ -1,4 +1,10 @@
-import type { Asset, AssetRule, BridgeRegistry, GuardrailResultT, SpecificationT } from "@boyscout/schemas";
+import type {
+  Asset,
+  AssetRule,
+  BridgeRegistry,
+  GuardrailResultT,
+  SpecificationT,
+} from "@boyscout/schemas";
 
 export { biomeLint } from "./biome-lint.js";
 

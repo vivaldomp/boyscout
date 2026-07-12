@@ -21,7 +21,12 @@ export function main(argv: string[]): number {
   try {
     const config = loadConfig(readFileSync(configPath, "utf8"));
     const specInput = JSON.parse(readFileSync(specPath, "utf8"));
-    const { emitted, preserved } = generate({ specInput, config, bridge, outDir: dirname(specPath) });
+    const { emitted, preserved } = generate({
+      specInput,
+      config,
+      bridge,
+      outDir: dirname(specPath),
+    });
     for (const path of emitted) process.stdout.write(`${path}\n`);
     for (const path of preserved) process.stdout.write(`preserved: ${path}\n`);
     return 0;

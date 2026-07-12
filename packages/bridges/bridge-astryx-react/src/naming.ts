@@ -8,7 +8,10 @@ export function kebab(s: string): string {
 
 /** "UserService" -> "userService". */
 export function camel(s: string): string {
-  const parts = s.replace(/[^a-zA-Z0-9]+/g, " ").trim().split(/\s+/);
+  const parts = s
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/);
   return parts
     .map((w, i) => (i === 0 ? w.charAt(0).toLowerCase() : w.charAt(0).toUpperCase()) + w.slice(1))
     .join("");

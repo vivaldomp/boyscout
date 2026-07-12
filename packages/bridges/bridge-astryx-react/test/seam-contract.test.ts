@@ -16,7 +16,10 @@ afterEach(() => {
 });
 
 /** Write the scaffold (.running) + a stub (src) into a temp project and return type diagnostics. */
-function diagnose(scaffold: Asset, stub: { path: string; content: string }): readonly ts.Diagnostic[] {
+function diagnose(
+  scaffold: Asset,
+  stub: { path: string; content: string },
+): readonly ts.Diagnostic[] {
   const dir = mkdtempSync(join(pkgRoot, ".seam-tmp-"));
   tmps.push(dir);
   const scaffoldPath = join(dir, ".running", scaffold.path);
@@ -43,7 +46,9 @@ const serviceFeature: FeatureT = {
   tree: {
     type: "Service",
     props: { name: "UserService" },
-    children: [{ type: "Method", props: { name: "getUsers", params: "", returns: "Promise<string[]>" } }],
+    children: [
+      { type: "Method", props: { name: "getUsers", params: "", returns: "Promise<string[]>" } },
+    ],
   },
   annotations: {},
   props: {},
@@ -73,7 +78,10 @@ const httpFeature: FeatureT = {
     type: "Http",
     props: { name: "UsersApi" },
     children: [
-      { type: "Endpoint", props: { name: "getUsers", method: "GET", path: "/users", response: "string[]" } },
+      {
+        type: "Endpoint",
+        props: { name: "getUsers", method: "GET", path: "/users", response: "string[]" },
+      },
     ],
   },
   annotations: {},
@@ -97,7 +105,8 @@ describe("seam contract: matching stub compiles, drifted stub fails (D2d)", () =
     const { scaffold, stub } = parts(serviceProvider.generate(serviceFeature));
     const drift = {
       path: stub.path,
-      content: "export const userService = {\n  getUsers(): Promise<number> {\n    throw new Error();\n  },\n};\n",
+      content:
+        "export const userService = {\n  getUsers(): Promise<number> {\n    throw new Error();\n  },\n};\n",
     };
     expect(diagnose(scaffold, drift).length).toBeGreaterThan(0);
   });
@@ -133,7 +142,8 @@ describe("seam contract: matching stub compiles, drifted stub fails (D2d)", () =
     const { scaffold, stub } = parts(httpProvider.generate(httpFeature));
     const drift = {
       path: stub.path,
-      content: "export const usersApiTransforms = {\n  getUsers(raw: unknown): number {\n    throw new Error();\n  },\n};\n",
+      content:
+        "export const usersApiTransforms = {\n  getUsers(raw: unknown): number {\n    throw new Error();\n  },\n};\n",
     };
     expect(diagnose(scaffold, drift).length).toBeGreaterThan(0);
   });

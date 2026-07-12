@@ -4,10 +4,14 @@ import { checkExpressible } from "../src/index.js";
 
 const registry = {
   capabilities: ["component"],
-  nodeTypesFor: (c: string): readonly string[] => (c === "component" ? ["Card", "VStack", "Text"] : []),
+  nodeTypesFor: (c: string): readonly string[] =>
+    c === "component" ? ["Card", "VStack", "Text"] : [],
 };
 
-function spec(tree: SpecificationT["features"][number]["tree"], capability = "component"): SpecificationT {
+function spec(
+  tree: SpecificationT["features"][number]["tree"],
+  capability = "component",
+): SpecificationT {
   return {
     version: "1",
     features: [{ id: "f1", capability, tree, annotations: {}, props: {}, approved: true }],
