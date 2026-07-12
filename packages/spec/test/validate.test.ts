@@ -27,9 +27,14 @@ describe("validateSpec", () => {
 
   it("returns 422 when a component is outside the catalog (pre-barrier)", () => {
     const bad = structuredClone(good);
-    bad.features[0].tree.children = [{ type: "Blob" }];
+    const feature = bad.features[0];
+    if (!feature) throw new Error("fixture");
+    feature.tree.children = [{ type: "Blob" }];
     const r = validateSpec(bad, ALLOWED);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.violations.some((v) => v.includes("Blob"))).toBe(true);
+    if (!r.ok) {
+      expect(r.violations.some((v) => v.includes("Blob"))).toBe(true);
+      expect(r.code).toBe(422);
+    }
   });
 });
