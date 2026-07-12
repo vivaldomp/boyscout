@@ -105,10 +105,10 @@ export interface Provider {
   generate(feature: FeatureT): Asset[];
 }
 
-/** The bridge's typed catalog: which capabilities and AST node types it can express, and the providers. */
+/** The bridge's typed catalog: capabilities, per-capability allowed AST node types, and providers. */
 export interface BridgeRegistry {
   readonly capabilities: readonly string[];
-  readonly componentTypes: readonly string[];
+  nodeTypesFor(capability: string): readonly string[];
   providerFor(capability: string): Provider | undefined;
 }
 

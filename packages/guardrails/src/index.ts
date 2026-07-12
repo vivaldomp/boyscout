@@ -1,4 +1,4 @@
-import type { Asset, AssetRule, GuardrailResultT, SpecificationT } from "@boyscout/schemas";
+import type { Asset, AssetRule, BridgeRegistry, GuardrailResultT, SpecificationT } from "@boyscout/schemas";
 
 export { biomeLint } from "./biome-lint.js";
 
@@ -16,18 +16,22 @@ function result(violations: string[]): GuardrailResultT {
   return { ok: violations.length === 0, violations, code: violations.length === 0 ? 200 : 422 };
 }
 
-/** Pre-barrier: every AST node type in every feature tree must exist in the bridge catalog. */
+/** Pre-barrier: each feature's capability must be registered, and every node type must be in that capability's vocabulary. */
 export function checkExpressible(
   spec: SpecificationT,
-  allowedTypes: readonly string[],
+  registry: Pick<BridgeRegistry, "capabilities" | "nodeTypesFor">,
 ): GuardrailResultT {
-  const allowed = new Set(allowedTypes);
   const violations: string[] = [];
   for (const feature of spec.features) {
+    if (!registry.capabilities.includes(feature.capability)) {
+      violations.push(`feature ${feature.id}: unknown capability "${feature.capability}"`);
+      continue;
+    }
+    const allowed = new Set(registry.nodeTypesFor(feature.capability));
     const types: string[] = [];
     collectTypes(feature.tree as TreeNode, types);
     for (const t of types) {
-      if (!allowed.has(t)) violations.push(`feature ${feature.id}: unknown component "${t}"`);
+      if (!allowed.has(t)) violations.push(`feature ${feature.id}: unknown node type "${t}"`);
     }
   }
   return result(violations);

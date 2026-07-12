@@ -11,7 +11,7 @@ const fakeBridge: Bridge = {
   platform: "react",
   registry: {
     capabilities: ["component"],
-    componentTypes: ["Card", "Text"],
+    nodeTypesFor: (c: string): readonly string[] => (c === "component" ? ["Card", "Text"] : []),
     providerFor: (cap) =>
       cap === "component"
         ? {

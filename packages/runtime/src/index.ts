@@ -65,7 +65,7 @@ export function buildAssets(opts: BuildOpts): Asset[] {
   }
 
   // validate(): Zod gate + pre-barrier.
-  const validated = validateSpec(opts.specInput, bridge.registry.componentTypes);
+  const validated = validateSpec(opts.specInput, bridge.registry);
   if (!validated.ok) throw new GateError(validated.violations);
   const spec = validated.spec;
 

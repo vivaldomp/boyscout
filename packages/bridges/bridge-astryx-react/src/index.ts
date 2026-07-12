@@ -9,7 +9,7 @@ export { astryxOnly } from "./astryx-only.js";
 
 export const registry: BridgeRegistry = {
   capabilities: ["component"],
-  componentTypes: COMPONENTS,
+  nodeTypesFor: (capability) => (capability === "component" ? COMPONENTS : []),
   providerFor: (capability) => (capability === "component" ? componentProvider : undefined),
 };
 

@@ -17,7 +17,7 @@ test("Bridge contract shapes", () => {
 
   const registry: BridgeRegistry = {
     capabilities: ["component"],
-    componentTypes: ["Card"],
+    nodeTypesFor: (_c: string): readonly string[] => ["Card"],
     providerFor: (_c: string): Provider | undefined => provider,
   };
 
