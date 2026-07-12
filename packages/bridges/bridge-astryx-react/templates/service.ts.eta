@@ -1,0 +1,7 @@
+import { <%= it.instanceName %> as impl } from "<%= it.importSpecifier %>";
+
+export interface <%= it.interfaceName %> {
+<% it.methods.forEach(function (m) { %>  <%= m.name %>(<%= m.params %>): <%= m.returns %>;
+<% }) %>}
+
+export const <%= it.instanceName %>: <%= it.interfaceName %> = impl;

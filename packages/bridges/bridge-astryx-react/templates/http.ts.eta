@@ -1,0 +1,14 @@
+import { <%= it.transformsName %> } from "<%= it.importSpecifier %>";
+
+export interface <%= it.transformsInterface %> {
+<% it.endpoints.forEach(function (e) { %>  <%= e.name %>(raw: unknown): <%= e.response %>;
+<% }) %>}
+
+const transforms: <%= it.transformsInterface %> = <%= it.transformsName %>;
+
+export const <%= it.clientName %> = {
+<% it.endpoints.forEach(function (e) { %>  async <%= e.name %>(): Promise<<%= e.response %>> {
+    const res = await fetch("<%= e.path %>", { method: "<%= e.method %>" });
+    return transforms.<%= e.name %>(await res.json());
+  },
+<% }) %>};

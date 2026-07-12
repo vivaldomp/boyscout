@@ -94,6 +94,8 @@ export interface CapabilityContract<In = unknown, Out = unknown> {
 export interface Asset {
   path: string;
   content: string;
+  /** true = durable human-owned stub (src/, create-if-absent); false/undefined = disposable scaffold (.running/). */
+  durable?: boolean;
 }
 
 /** A post-generation guardrail check over one asset. Returns violation messages ([] = pass). */
@@ -105,10 +107,10 @@ export interface Provider {
   generate(feature: FeatureT): Asset[];
 }
 
-/** The bridge's typed catalog: which capabilities and AST node types it can express, and the providers. */
+/** The bridge's typed catalog: capabilities, per-capability allowed AST node types, and providers. */
 export interface BridgeRegistry {
   readonly capabilities: readonly string[];
-  readonly componentTypes: readonly string[];
+  nodeTypesFor(capability: string): readonly string[];
   providerFor(capability: string): Provider | undefined;
 }
 

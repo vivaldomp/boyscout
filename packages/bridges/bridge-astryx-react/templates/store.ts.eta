@@ -1,0 +1,25 @@
+import { useReducer } from "react";
+import { <%= it.handlersName %> } from "<%= it.importSpecifier %>";
+
+export type <%= it.stateType %> = <%= it.state %>;
+
+export type <%= it.actionType %> =
+<% it.actions.forEach(function (a) { %>  | { type: "<%= a.name %>"; payload: <%= a.payload %> }
+<% }) %>;
+
+export interface <%= it.handlersInterface %> {
+<% it.actions.forEach(function (a) { %>  <%= a.name %>(state: <%= it.stateType %>, payload: <%= a.payload %>): <%= it.stateType %>;
+<% }) %>}
+
+const handlers: <%= it.handlersInterface %> = <%= it.handlersName %>;
+
+function reducer(state: <%= it.stateType %>, action: <%= it.actionType %>): <%= it.stateType %> {
+  switch (action.type) {
+<% it.actions.forEach(function (a) { %>    case "<%= a.name %>":
+      return handlers.<%= a.name %>(state, action.payload);
+<% }) %>  }
+}
+
+export function <%= it.hookName %>(initial: <%= it.stateType %>) {
+  return useReducer(reducer, initial);
+}

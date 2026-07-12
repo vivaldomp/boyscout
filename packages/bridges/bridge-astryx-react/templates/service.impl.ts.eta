@@ -1,0 +1,5 @@
+export const <%= it.instanceName %> = {
+<% it.methods.forEach(function (m) { %>  <%= m.name %>(<%= m.params %>): <%= m.returns %> {
+    throw new Error("not implemented: <%= m.name %>");
+  },
+<% }) %>};

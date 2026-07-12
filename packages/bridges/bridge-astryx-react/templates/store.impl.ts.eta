@@ -1,0 +1,5 @@
+export const <%= it.handlersName %> = {
+<% it.actions.forEach(function (a) { %>  <%= a.name %>(state: <%= it.state %>, payload: <%= a.payload %>): <%= it.state %> {
+    throw new Error("not implemented: <%= a.name %>");
+  },
+<% }) %>};

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { validateSpec } from "../src/index.js";
 
-const ALLOWED = ["Card", "Text"];
+const registry = {
+  capabilities: ["component"],
+  nodeTypesFor: (): readonly string[] => ["Card", "Text"],
+};
 
 const good = {
   version: "1",
@@ -20,13 +23,13 @@ const good = {
 
 describe("validateSpec", () => {
   it("returns the parsed spec when shape and catalog are valid", () => {
-    const r = validateSpec(good, ALLOWED);
+    const r = validateSpec(good, registry);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.spec.features[0]?.id).toBe("f1");
   });
 
   it("returns 422 when the shape is malformed", () => {
-    const r = validateSpec({ version: 1 }, ALLOWED);
+    const r = validateSpec({ version: 1 }, registry);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.code).toBe(422);
   });
@@ -36,7 +39,7 @@ describe("validateSpec", () => {
     const feature = bad.features[0];
     if (!feature) throw new Error("fixture");
     feature.tree.children = [{ type: "Blob" }];
-    const r = validateSpec(bad, ALLOWED);
+    const r = validateSpec(bad, registry);
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.violations.some((v) => v.includes("Blob"))).toBe(true);

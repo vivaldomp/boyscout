@@ -16,5 +16,8 @@
     "@boyscout/guardrails": "workspace:*",
     "@boyscout/schemas": "workspace:*",
     "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17"
   }
 }
