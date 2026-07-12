@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { isAbsolute, join, normalize } from "node:path";
+import { join, posix, win32 } from "node:path";
 import { format, type FormatLang, writeBytes } from "@boyscout/determinism";
 import { checkAssets } from "@boyscout/guardrails";
 import { plan } from "@boyscout/planner";
@@ -112,7 +112,11 @@ export interface EmitResult {
 }
 
 function assertSafe(p: string): void {
-  if (p.includes("..") || normalize(p) !== p || isAbsolute(p)) {
+  // Asset paths are POSIX-style forward-slash relative paths. Validate with posix
+  // semantics so a legitimate "services/X.ts" is not flagged on Windows, where the
+  // OS normalize() rewrites "/"->"\" and would trip normalize(p) !== p. Reject
+  // traversal and both absolute conventions (posix "/foo", win32 "C:\" / "\\host").
+  if (p.includes("..") || posix.normalize(p) !== p || posix.isAbsolute(p) || win32.isAbsolute(p)) {
     throw new Error(`path traversal rejected: "${p}"`);
   }
 }

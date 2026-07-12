@@ -50,4 +50,20 @@ describe("emit — durable create-if-absent (D2b)", () => {
       /traversal|\.\./,
     );
   });
+
+  it("accepts multi-segment forward-slash asset paths on every OS (guard is posix-normalized)", () => {
+    // Regression: the OS normalize() rewrites "/"->"\" on Windows, which used to
+    // reject legitimate "a/b/c.ts" paths there. The guard must be OS-independent.
+    const outDir = mkdtempSync(join(tmpdir(), "durable-"));
+    expect(() =>
+      emit([{ path: "a/b/c.ts", content: "export const x = 1;\n", durable: true }], outDir),
+    ).not.toThrow();
+    expect(existsSync(join(outDir, "src", "a/b/c.ts"))).toBe(true);
+  });
+
+  it("rejects absolute paths of either convention (posix and win32) on every OS", () => {
+    const outDir = mkdtempSync(join(tmpdir(), "durable-"));
+    expect(() => emit([{ path: "/etc/evil.ts", content: "x" }], outDir)).toThrow(/traversal/);
+    expect(() => emit([{ path: "C:\\evil.ts", content: "x" }], outDir)).toThrow(/traversal/);
+  });
 });
