@@ -20,6 +20,14 @@ function collectTypes(node: TreeNode, acc: string[]): void {
 
 const CHILD_TYPE: Record<string, string> = { service: "Method", store: "Action", http: "Endpoint" };
 
+const SAFE_IDENT = /^[A-Za-z][A-Za-z0-9]*$/;
+/** Governed node types whose `name` prop becomes a TS identifier / path segment and must be a safe identifier. */
+const GOVERNED_NAME_NODES: Record<string, ReadonlySet<string>> = {
+  service: new Set(["Service", "Method"]),
+  store: new Set(["Store", "Action"]),
+  http: new Set(["Http", "Endpoint"]),
+};
+
 function result(violations: string[]): GuardrailResultT {
   return { ok: violations.length === 0, violations, code: violations.length === 0 ? 200 : 422 };
 }
@@ -50,6 +58,21 @@ export function checkExpressible(
           `feature ${feature.id}: ${feature.capability} has no ${childType} children`,
         );
       }
+    }
+    const governed = GOVERNED_NAME_NODES[feature.capability];
+    if (governed) {
+      const checkName = (node: TreeNode): void => {
+        if (governed.has(node.type)) {
+          const name = (node as { props?: Record<string, unknown> }).props?.name;
+          if (typeof name !== "string" || !SAFE_IDENT.test(name)) {
+            violations.push(
+              `feature ${feature.id}: ${node.type} has unsafe identifier name ${JSON.stringify(name)}`,
+            );
+          }
+        }
+        if (node.children) for (const c of node.children) checkName(c);
+      };
+      checkName(feature.tree as TreeNode);
     }
   }
   return result(violations);

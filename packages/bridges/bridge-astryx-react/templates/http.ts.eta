@@ -8,7 +8,7 @@ const transforms: <%= it.transformsInterface %> = <%= it.transformsName %>;
 
 export const <%= it.clientName %> = {
 <% it.endpoints.forEach(function (e) { %>  async <%= e.name %>(): Promise<<%= e.response %>> {
-    const res = await fetch("<%= e.path %>", { method: "<%= e.method %>" });
+    const res = await fetch(<%= e.pathLiteral %>, { method: <%= e.methodLiteral %> });
     return transforms.<%= e.name %>(await res.json());
   },
 <% }) %>};
