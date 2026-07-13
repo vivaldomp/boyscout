@@ -3,7 +3,7 @@ import { makeClient, readToken } from "../src/api.js";
 
 describe("api client", () => {
   it("reads the token from the URL query", () => {
-    expect(readToken("?t=abc123")).toBe("abc123");
+    expect(readToken("#t=abc123")).toBe("abc123");
     expect(readToken("")).toBe("");
   });
 

@@ -7,8 +7,9 @@ export interface AuthState {
   errors: { line: number; message: string }[];
 }
 
-export function readToken(search: string): string {
-  return new URLSearchParams(search).get("t") ?? "";
+/** Read the session token from the URL fragment (`#t=…`). Fragments are never sent to the server or in Referer. */
+export function readToken(hash: string): string {
+  return new URLSearchParams(hash.replace(/^#/, "")).get("t") ?? "";
 }
 
 export function makeClient(token: string, fetchImpl: typeof fetch = fetch) {

@@ -55,6 +55,6 @@ export function authorCommand(argv: string[]): number {
   });
 
   serve({ fetch: app.fetch, hostname: host, port });
-  process.stdout.write(`boyscout author: open ${selfOrigin}/?t=${token}\n`);
+  process.stdout.write(`boyscout author: open ${selfOrigin}/#t=${token}\n`);
   return 0;
 }
