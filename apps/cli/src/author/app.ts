@@ -1,6 +1,6 @@
 import { canonicalJson, hash, writeBytes } from "@boyscout/determinism";
 import { DialectError, type DialectRegistry, parseOpenui } from "@boyscout/dialect";
-import type { SpecificationT } from "@boyscout/schemas";
+import type { AstNodeT, SpecificationT } from "@boyscout/schemas";
 import { Hono } from "hono";
 import { registerCommit } from "./commit.js";
 
@@ -21,6 +21,7 @@ export interface AuthState {
   ast: SpecificationT | null;
   approvals: Record<string, boolean>;
   errors: { line: number; message: string }[];
+  annotations: Record<string, Record<string, string>>;
 }
 
 export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () => AuthState } {
@@ -30,8 +31,35 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
   let errors: { line: number; message: string }[] = [];
   let approvals: Record<string, boolean> = {};
   let sigs: Record<string, string> = {};
+  let annotations: Record<string, Record<string, { note: string; sig: string }>> = {};
+
+  const nodeAtPath = (tree: AstNodeT, pathKey: string): AstNodeT | undefined => {
+    if (pathKey === "") return tree;
+    let node: AstNodeT | undefined = tree;
+    for (const seg of pathKey.split(".")) node = node?.children?.[Number(seg)];
+    return node;
+  };
+  const nodeSig = (node: AstNodeT): string => hash(writeBytes(canonicalJson(node)));
+  const notesAll = (): Record<string, Record<string, string>> => {
+    const out: Record<string, Record<string, string>> = {};
+    for (const [fid, map] of Object.entries(annotations)) {
+      const notes: Record<string, string> = {};
+      for (const [k, v] of Object.entries(map)) notes[k] = v.note;
+      out[fid] = notes;
+    }
+    return out;
+  };
 
   function reparse(text: string): void {
+    if (text.trim() === "") {
+      openui = "";
+      spec = null;
+      approvals = {};
+      sigs = {};
+      annotations = {};
+      errors = [];
+      return;
+    }
     try {
       const next = parseOpenui(text, registry);
       const nextApprovals: Record<string, boolean> = {};
@@ -42,10 +70,23 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
         // carry approval only if this feature is byte-identical to the last good parse
         nextApprovals[f.id] = sigs[f.id] === s ? (approvals[f.id] ?? false) : false;
       }
+      // carry each annotation only if the node at its path still hashes the same
+      const nextAnnotations: typeof annotations = {};
+      for (const f of next.features) {
+        const existing = annotations[f.id];
+        if (!existing) continue;
+        const kept: Record<string, { note: string; sig: string }> = {};
+        for (const [pathKey, ann] of Object.entries(existing)) {
+          const node = nodeAtPath(f.tree, pathKey);
+          if (node && nodeSig(node) === ann.sig) kept[pathKey] = ann;
+        }
+        if (Object.keys(kept).length > 0) nextAnnotations[f.id] = kept;
+      }
       openui = text;
       spec = next;
       approvals = nextApprovals;
       sigs = nextSigs;
+      annotations = nextAnnotations;
       errors = [];
     } catch (e) {
       errors = [{ line: e instanceof DialectError ? e.line : 0, message: (e as Error).message }];
@@ -57,7 +98,7 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
   reparse(opts.initialOpenui);
   openui = opts.initialOpenui;
 
-  const snapshot = (): AuthState => ({ openui, ast: spec, approvals, errors });
+  const snapshot = (): AuthState => ({ openui, ast: spec, approvals, errors, annotations: notesAll() });
 
   const app = new Hono();
 
@@ -87,12 +128,33 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
     return c.json({ approvals });
   });
 
+  app.post("/api/annotate", async (c) => {
+    const body = (await c.req.json().catch(() => ({}))) as {
+      featureId?: unknown;
+      path?: unknown;
+      note?: unknown;
+    };
+    const featureId = typeof body.featureId === "string" ? body.featureId : "";
+    const path = typeof body.path === "string" ? body.path : "";
+    const note = typeof body.note === "string" ? body.note : "";
+    const feature = spec?.features.find((f) => f.id === featureId);
+    const node = feature ? nodeAtPath(feature.tree, path) : undefined;
+    if (feature && node) {
+      const map = (annotations[featureId] ??= {});
+      if (note === "") delete map[path];
+      else map[path] = { note, sig: nodeSig(node) };
+      if (Object.keys(map).length === 0) delete annotations[featureId];
+    }
+    return c.json({ annotations: notesAll()[featureId] ?? {} });
+  });
+
   // commit route added in Task 4 (needs writeBytes + path shielding)
   registerCommit(
     app,
     opts,
     () => spec,
     () => approvals,
+    () => annotations,
     registry,
   );
 
