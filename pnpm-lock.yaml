@@ -171,6 +171,18 @@ importers:
         specifier: workspace:*
         version: link:../schemas
 
+  packages/questionnaire:
+    dependencies:
+      '@boyscout/dialect':
+        specifier: workspace:*
+        version: link:../dialect
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      yaml:
+        specifier: 2.9.0
+        version: 2.9.0
+
   packages/renderer:
     dependencies:
       '@boyscout/schemas':
