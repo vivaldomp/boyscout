@@ -56,7 +56,7 @@ describe("guided endpoints", () => {
     const { app } = make();
     const res = await app.request("/api/questionnaire", { headers: auth });
     expect(res.status).toBe(200);
-    expect(((await res.json()) as { questions: { id: string }[] }).questions[0]!.id).toBe("screen");
+    expect(((await res.json()) as { questions: { id: string }[] }).questions[0]?.id).toBe("screen");
   });
 
   it("returns 404 when no questionnaire is configured", async () => {
@@ -76,13 +76,15 @@ describe("guided endpoints", () => {
     const { app } = make();
     const evs = await frames(await compose(app, { screen: "dashboard" }));
     expect(evs.map((e) => e.event)).toEqual(["feature", "done"]);
-    expect(JSON.parse(evs[0]!.data).id).toBe("dash");
-    const done = JSON.parse(evs[1]!.data);
+    const [featureEv, doneEv] = evs;
+    if (!featureEv || !doneEv) throw new Error("expected feature + done events");
+    expect(JSON.parse(featureEv.data).id).toBe("dash");
+    const done = JSON.parse(doneEv.data);
     expect(done.openui).toContain("Overview");
     expect(done.spec.features).toHaveLength(1);
     // seeded into session state:
     const state = (await (await app.request("/api/state", { headers: auth })).json()) as AuthState;
-    expect(state.ast!.features[0]!.id).toBe("dash");
+    expect(state.ast?.features[0]?.id).toBe("dash");
     expect(state.approvals).toEqual({ dash: false });
   });
 
@@ -90,6 +92,8 @@ describe("guided endpoints", () => {
     const { app } = make();
     const evs = await frames(await compose(app, {}));
     expect(evs.map((e) => e.event)).toEqual(["violations"]);
-    expect(JSON.parse(evs[0]!.data).violations[0]).toContain("required");
+    const [violationsEv] = evs;
+    if (!violationsEv) throw new Error("expected a violations event");
+    expect(JSON.parse(violationsEv.data).violations[0]).toContain("required");
   });
 });

@@ -150,7 +150,8 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
     const feature = spec?.features.find((f) => f.id === featureId);
     const node = feature ? nodeAtPath(feature.tree, path) : undefined;
     if (feature && node) {
-      const map = (annotations[featureId] ??= {});
+      const map = annotations[featureId] ?? {};
+      annotations[featureId] = map;
       if (note === "") delete map[path];
       else map[path] = { note, sig: nodeSig(node) };
       if (Object.keys(map).length === 0) delete annotations[featureId];

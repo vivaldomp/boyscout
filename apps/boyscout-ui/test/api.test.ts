@@ -38,8 +38,10 @@ describe("api client — guided", () => {
     const client = makeClient2("tok", fakeFetch);
     const r = await client.annotate("card", "0", "n");
     expect(r.annotations).toEqual({ "0": "n" });
-    expect(calls[0]?.url).toContain("/api/annotate");
-    expect(JSON.parse(calls[0]!.body)).toEqual({ featureId: "card", path: "0", note: "n" });
+    const call0 = calls[0];
+    if (!call0) throw new Error("expected a recorded call");
+    expect(call0.url).toContain("/api/annotate");
+    expect(JSON.parse(call0.body)).toEqual({ featureId: "card", path: "0", note: "n" });
   });
 
   it("questionnaire returns null on a 404", async () => {

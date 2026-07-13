@@ -51,7 +51,9 @@ describe("formComponents", () => {
   });
 
   it("renders multi options as checkboxes", () => {
-    const multi: QuestionnaireT = { ...Q, questions: [{ ...Q.questions[0]!, type: "multi" }] };
+    const q0 = Q.questions[0];
+    if (!q0) throw new Error("fixture must have a question");
+    const multi: QuestionnaireT = { ...Q, questions: [{ ...q0, type: "multi" }] };
     const out = html(questionnaireToTree(multi, {}), {});
     expect(out).toContain('type="checkbox"');
   });

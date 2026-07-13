@@ -33,8 +33,8 @@ export function toggleAnswer(
 /** Every node's positional path (dot-joined child indices; "" = root) and type, pre-order. */
 export function flattenPaths(tree: AstNodeT, prefix = ""): { pathKey: string; type: string }[] {
   const out = [{ pathKey: prefix, type: tree.type }];
-  (tree.children ?? []).forEach((c, i) =>
-    out.push(...flattenPaths(c, prefix === "" ? String(i) : `${prefix}.${i}`)),
-  );
+  (tree.children ?? []).forEach((c, i) => {
+    out.push(...flattenPaths(c, prefix === "" ? String(i) : `${prefix}.${i}`));
+  });
   return out;
 }
