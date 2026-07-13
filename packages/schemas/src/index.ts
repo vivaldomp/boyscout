@@ -35,6 +35,42 @@ export const Specification = z.object({
 });
 export type SpecificationT = z.infer<typeof Specification>;
 
+// ---- Questionnaire (SP5a): closed, deterministic composition source (D9) ----
+
+/** One authored fragment: a .openui tree BODY (single root node) + the feature it becomes. */
+export const Contribution = z.object({
+  id: z.string(),
+  capability: z.string(),
+  openui: z.string(),
+});
+export type ContributionT = z.infer<typeof Contribution>;
+
+export const QuestionOption = z.object({
+  value: z.string(),
+  contributes: Contribution,
+});
+export type QuestionOptionT = z.infer<typeof QuestionOption>;
+
+export const Question = z.object({
+  id: z.string(),
+  type: z.enum(["single", "multi"]),
+  prompt: z.string(),
+  options: z.array(QuestionOption),
+  /** closed predicate: { earlierQuestionId: value | [values] }; AND across keys, any-of within a list. */
+  enabledWhen: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
+});
+export type QuestionT = z.infer<typeof Question>;
+
+export const Questionnaire = z.object({
+  bridge: z.string(),
+  platform: z.string(),
+  questions: z.array(Question),
+});
+export type QuestionnaireT = z.infer<typeof Questionnaire>;
+
+/** Closed answers: questionId -> chosen option value(s). single => string, multi => string[]. */
+export type AnswersT = Record<string, string | string[]>;
+
 export const BoyscoutConfig = z.object({
   platform: z.string(),
   bridge: z.string(),
