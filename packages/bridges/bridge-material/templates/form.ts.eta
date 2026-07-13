@@ -1,0 +1,18 @@
+import { Component, inject } from "@angular/core";
+import { NonNullableFormBuilder, ReactiveFormsModule } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+
+@Component({
+  standalone: true,
+  selector: "<%= it.selector %>",
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  template: `<%= it.body %>`,
+})
+export class <%= it.className %> {
+  private readonly fb = inject(NonNullableFormBuilder);
+  readonly form = this.fb.group({
+<% it.fields.forEach(function (f) { %>    <%= f.key %>: this.fb.control<<%= f.tsType %>>(<%= f.initial %>),
+<% }) %>  });
+}
