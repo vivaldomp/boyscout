@@ -35,6 +35,7 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
 
   const nodeAtPath = (tree: AstNodeT, pathKey: string): AstNodeT | undefined => {
     if (pathKey === "") return tree;
+    if (!/^\d+(\.\d+)*$/.test(pathKey)) return undefined;
     let node: AstNodeT | undefined = tree;
     for (const seg of pathKey.split(".")) node = node?.children?.[Number(seg)];
     return node;

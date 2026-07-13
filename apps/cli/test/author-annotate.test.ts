@@ -52,6 +52,9 @@ describe("annotations side-car", () => {
     const { app } = make();
     await annotate(app, { featureId: "nope", path: "0", note: "n" });
     await annotate(app, { featureId: "card", path: "9.9", note: "n" });
+    // malformed paths with empty segments
+    await annotate(app, { featureId: "card", path: "0.", note: "n" });
+    await annotate(app, { featureId: "card", path: ".0", note: "n" });
     expect((await state(app)).annotations).toEqual({});
   });
 });
