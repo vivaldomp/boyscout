@@ -1448,7 +1448,7 @@ test.beforeAll(async () => {
 test.afterAll(() => { daemon?.kill(); });
 
 test("author -> preview -> approve -> commit -> generate", async ({ page }) => {
-  await page.goto(`http://127.0.0.1:${PORT}/?t=${TOKEN}`);
+  await page.goto(`http://127.0.0.1:${PORT}/#t=${TOKEN}`);
   await expect(page.getByTestId("preview")).toContainText("Profile");
   await page.getByTestId("approve-user-card").check();
   await page.getByTestId("commit").click();
