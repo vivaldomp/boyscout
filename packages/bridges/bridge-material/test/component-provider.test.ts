@@ -37,4 +37,35 @@ describe("componentProvider", () => {
     // text is HTML-escaped
     expect(c).toContain("Profile &amp; &lt;Overview&gt;");
   });
+
+  it("neutralizes template-literal injection payloads in text props", () => {
+    const injected: FeatureT = {
+      id: "evil-card",
+      capability: "component",
+      tree: {
+        type: "Card",
+        children: [
+          {
+            type: "CardTitle",
+            // biome-ignore lint/suspicious/noTemplateCurlyInString: literal injection payload under test, not a template placeholder
+            props: { text: "hi`});${globalThis}<b>{{x}}" },
+          },
+        ],
+      },
+      annotations: {},
+      props: {},
+      approved: true,
+    };
+    const c = componentProvider.generate(injected)[0]?.content ?? "";
+    // backtick is escaped so it cannot terminate the generated template literal
+    expect(c).toContain("hi\\`");
+    // dollar is escaped so ${...} cannot be evaluated as a live JS interpolation
+    expect(c).toContain("\\$");
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal string under test, not a template placeholder
+    expect(c).not.toContain("${globalThis}");
+    // angle brackets are HTML-escaped
+    expect(c).toContain("&lt;b&gt;");
+    // braces are escaped so Angular does not treat {{x}} as interpolation
+    expect(c).toContain("&#123;&#123;x&#125;&#125;");
+  });
 });

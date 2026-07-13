@@ -4,27 +4,13 @@ import { render } from "@boyscout/codegen";
 import { byteCompare } from "@boyscout/determinism";
 import type { Asset, AstNodeT, FeatureT, Provider } from "@boyscout/schemas";
 import { CATALOG, TEXT_CHILD } from "./catalog.js";
+import { escapeAttr, escapeText } from "./escape.js";
 import { kebab, pascal } from "./naming.js";
 
 const TEMPLATE = readFileSync(
   fileURLToPath(new URL("../templates/component.ts.eta", import.meta.url)),
   "utf8",
 );
-
-export function escapeAttr(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-export function escapeText(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
 
 function selectorOf(type: string): string {
   const entry = CATALOG[type];
