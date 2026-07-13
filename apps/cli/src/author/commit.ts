@@ -20,6 +20,7 @@ export function registerCommit(
   opts: AuthAppOptions,
   getSpec: () => SpecificationT | null,
   getApprovals: () => Record<string, boolean>,
+  getAnnotations: () => Record<string, Record<string, { note: string; sig: string }>>,
   registry: DialectRegistry,
 ): void {
   app.post("/api/commit", (c) => {
@@ -34,8 +35,19 @@ export function registerCommit(
     if (violations.length > 0) return c.json({ ok: false, violations }, 422);
 
     const s = spec as SpecificationT;
-    shieldWrite(opts.specPath, opts.projectRoot, writeBytes(canonicalJson(s)));
-    shieldWrite(opts.openuiPath, opts.projectRoot, writeBytes(serializeOpenui(s, registry)));
+    const ann = getAnnotations();
+    const merged: SpecificationT = {
+      ...s,
+      features: s.features.map((f) => {
+        const map = ann[f.id];
+        if (!map) return f;
+        const notes: Record<string, string> = {};
+        for (const [k, v] of Object.entries(map)) notes[k] = v.note;
+        return { ...f, annotations: { ...f.annotations, ...notes } };
+      }),
+    };
+    shieldWrite(opts.specPath, opts.projectRoot, writeBytes(canonicalJson(merged)));
+    shieldWrite(opts.openuiPath, opts.projectRoot, writeBytes(serializeOpenui(merged, registry)));
     return c.json({ ok: true, written: [opts.specPath, opts.openuiPath] });
   });
 }

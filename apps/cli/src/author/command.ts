@@ -4,6 +4,8 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { registry } from "@boyscout/bridge-astryx-react";
+import { parseQuestionnaire, QuestionnaireError } from "@boyscout/questionnaire";
+import type { QuestionnaireT } from "@boyscout/schemas";
 import { createAuthApp } from "./app.js";
 
 function flag(argv: string[], name: string, fallback: string): string {
@@ -33,6 +35,18 @@ export function authorCommand(argv: string[]): number {
   const selfOrigin = `http://${host}:${port}`;
   const initialOpenui = existsSync(openuiPath) ? readFileSync(openuiPath, "utf8") : "";
 
+  const questionnairePath = flag(argv, "--questionnaire", "");
+  let questionnaire: QuestionnaireT | undefined;
+  if (questionnairePath) {
+    try {
+      questionnaire = parseQuestionnaire(readFileSync(resolve(questionnairePath), "utf8"));
+    } catch (e) {
+      const msg = e instanceof QuestionnaireError ? e.message : (e as Error).message;
+      process.stderr.write(`boyscout author: ${msg}\n`);
+      return 1;
+    }
+  }
+
   const { app } = createAuthApp({
     registry,
     token,
@@ -41,6 +55,7 @@ export function authorCommand(argv: string[]): number {
     specPath,
     openuiPath,
     projectRoot: process.cwd(),
+    ...(questionnaire ? { questionnaire } : {}),
   });
 
   // Static SPA, path-shielded to uiDist; unknown paths fall back to index.html (SPA routing).
