@@ -68,8 +68,8 @@ export function App({ client }: { client: Client }): ReactElement {
         />
         {errors.length > 0 && (
           <ul data-testid="errors" style={{ color: "crimson", fontFamily: "monospace" }}>
-            {errors.map((e, i) => (
-              <li key={i}>
+            {errors.map((e) => (
+              <li key={`${e.line}:${e.message}`}>
                 line {e.line}: {e.message}
               </li>
             ))}

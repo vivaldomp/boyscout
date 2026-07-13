@@ -34,21 +34,21 @@ const buttonVariant = (v: unknown): ButtonVariant =>
 const num = (v: unknown, d: number): number => (typeof v === "number" ? v : d);
 
 const VStackNode: NodeComponent = ({ node, children }) => (
-  <VStack gap={spacing(node.props?.["gap"], 0)}>{children}</VStack>
+  <VStack gap={spacing(node.props?.gap, 0)}>{children}</VStack>
 );
 const HStackNode: NodeComponent = ({ node, children }) => (
-  <HStack gap={spacing(node.props?.["gap"], 0)}>{children}</HStack>
+  <HStack gap={spacing(node.props?.gap, 0)}>{children}</HStack>
 );
 const CardNode: NodeComponent = ({ children }) => <Card>{children}</Card>;
 const GridNode: NodeComponent = ({ node, children }) => (
-  <Grid columns={num(node.props?.["columns"], 1)}>{children}</Grid>
+  <Grid columns={num(node.props?.columns, 1)}>{children}</Grid>
 );
 const HeadingNode: NodeComponent = ({ node }) => (
-  <Heading level={headingLevel(node.props?.["level"])}>{str(node.props?.["text"])}</Heading>
+  <Heading level={headingLevel(node.props?.level)}>{str(node.props?.text)}</Heading>
 );
-const TextNode: NodeComponent = ({ node }) => <Text>{str(node.props?.["text"])}</Text>;
+const TextNode: NodeComponent = ({ node }) => <Text>{str(node.props?.text)}</Text>;
 const ButtonNode: NodeComponent = ({ node }) => (
-  <Button label={str(node.props?.["text"])} variant={buttonVariant(node.props?.["variant"])} />
+  <Button label={str(node.props?.text)} variant={buttonVariant(node.props?.variant)} />
 );
 
 /** Non-visual logic-bearing nodes carry no pixels — show a labeled structural placeholder. */
@@ -56,7 +56,7 @@ const placeholder =
   (label: string): NodeComponent =>
   ({ node, children }) => (
     <div style={{ border: "1px dashed #999", padding: 4, margin: 2, font: "12px monospace" }}>
-      {label}: {str(node.props?.["name"])}
+      {label}: {str(node.props?.name)}
       {children}
     </div>
   );
