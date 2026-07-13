@@ -51,4 +51,22 @@ describe("author daemon: commit gate", () => {
     const writtenOpenui = readFileSync(join(root, "boyscout.openui"), "utf8");
     expect(parseOpenui(writtenOpenui, registry)).toEqual(spec);
   });
+
+  it("rejects commit of a header-only spec with zero features (422)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bs-"));
+    const { app } = createAuthApp({
+      registry,
+      token: "t",
+      selfOrigin: "http://127.0.0.1:4517",
+      initialOpenui: "spec version=1 bridge=astryx-react platform=react",
+      specPath: join(root, "boyscout-spec.json"),
+      openuiPath: join(root, "boyscout.openui"),
+      projectRoot: root,
+    });
+    const res = await app.request("/api/commit", { method: "POST", headers: auth });
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { ok: boolean; violations: string[] };
+    expect(body.ok).toBe(false);
+    expect(body.violations.some((v: string) => v.includes("no features"))).toBe(true);
+  });
 });
