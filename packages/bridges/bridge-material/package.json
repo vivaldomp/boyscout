@@ -1,0 +1,27 @@
+{
+  "name": "@boyscout/bridge-material",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@boyscout/codegen": "workspace:*",
+    "@boyscout/determinism": "workspace:*",
+    "@boyscout/guardrails": "workspace:*",
+    "@boyscout/schemas": "workspace:*",
+    "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@angular/common": "18.2.14",
+    "@angular/core": "18.2.14",
+    "@angular/forms": "18.2.14",
+    "@angular/material": "18.2.14",
+    "@angular/router": "18.2.14",
+    "rxjs": "7.8.2"
+  }
+}
