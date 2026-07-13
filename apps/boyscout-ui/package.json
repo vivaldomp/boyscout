@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astryxdesign/core": "0.1.4",
+    "@boyscout/questionnaire": "workspace:*",
     "@boyscout/renderer": "workspace:*",
     "@boyscout/schemas": "workspace:*",
     "@stylexjs/stylex": "0.18.3",

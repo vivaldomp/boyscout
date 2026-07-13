@@ -11,6 +11,8 @@ import { parse as parseYaml } from "yaml";
 import { assembleDoc } from "./assemble.js";
 import { enabledQuestions } from "./enabled.js";
 
+export { enabledQuestions } from "./enabled.js";
+
 export class QuestionnaireError extends Error {
   constructor(message: string) {
     super(message);

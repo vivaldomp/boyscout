@@ -26,6 +26,9 @@ importers:
       '@astryxdesign/core':
         specifier: 0.1.4
         version: 0.1.4(@stylexjs/stylex@0.18.3)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@boyscout/questionnaire':
+        specifier: workspace:*
+        version: link:../../packages/questionnaire
       '@boyscout/renderer':
         specifier: workspace:*
         version: link:../../packages/renderer
