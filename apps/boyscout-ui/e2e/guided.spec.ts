@@ -61,6 +61,16 @@ test.afterAll(() => {
   daemon?.kill();
 });
 
+test("an incomplete answer set shows violations and does not seed", async ({ page }) => {
+  // NOTE: must run BEFORE the happy-path test — it relies on the fresh, unseeded daemon session.
+  await page.goto(`http://127.0.0.1:${PORT}/#t=${TOKEN}`);
+  await expect(page.getByTestId("questionnaire-form")).toBeVisible();
+  // no answer to the required single question -> violations, and nothing is seeded:
+  await expect(page.getByTestId("violations")).toContainText("required");
+  await expect(page.getByTestId("editor")).toHaveValue("");
+  await expect(page.getByTestId("commit")).toBeDisabled();
+});
+
 test("questionnaire -> cascade -> stream -> annotate -> approve -> commit", async ({ page }) => {
   await page.goto(`http://127.0.0.1:${PORT}/#t=${TOKEN}`);
   await expect(page.getByTestId("questionnaire-form")).toBeVisible();
@@ -92,11 +102,4 @@ test("questionnaire -> cascade -> stream -> annotate -> approve -> commit", asyn
   expect(ids).toEqual(["dashboard-grid", "header-bar"]);
   const dash = spec.features.find((f: { id: string }) => f.id === "dashboard-grid");
   expect(dash.annotations[""]).toBe("primary grid");
-});
-
-test("an incomplete answer set shows violations and does not seed", async ({ page }) => {
-  await page.goto(`http://127.0.0.1:${PORT}/#t=${TOKEN}`);
-  await expect(page.getByTestId("questionnaire-form")).toBeVisible();
-  // no answer to the required single question -> violations, no features in preview
-  await expect(page.getByTestId("violations")).toContainText("required");
 });

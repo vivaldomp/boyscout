@@ -171,23 +171,25 @@ export function App({ client }: { client: Client }): ReactElement {
             </div>
           ))}
         </div>
-        <div data-testid="annotations">
-          {features.map((f) => (
-            <div key={f.id}>
-              <strong>{f.id}</strong>
-              {flattenPaths(f.tree).map(({ pathKey, type }) => (
-                <label key={pathKey || "root"} style={{ display: "block", fontSize: 12 }}>
-                  {pathKey || "root"} · {type}
-                  <input
-                    data-testid={`annotate-${f.id}-${pathKey}`}
-                    value={annotations[f.id]?.[pathKey] ?? ""}
-                    onChange={(e) => setNote(f.id, pathKey, e.target.value)}
-                  />
-                </label>
-              ))}
-            </div>
-          ))}
-        </div>
+        {questionnaire && (
+          <div data-testid="annotations">
+            {features.map((f) => (
+              <div key={f.id}>
+                <strong>{f.id}</strong>
+                {flattenPaths(f.tree).map(({ pathKey, type }) => (
+                  <label key={pathKey || "root"} style={{ display: "block", fontSize: 12 }}>
+                    {pathKey || "root"} · {type}
+                    <input
+                      data-testid={`annotate-${f.id}-${pathKey}`}
+                      value={annotations[f.id]?.[pathKey] ?? ""}
+                      onChange={(e) => setNote(f.id, pathKey, e.target.value)}
+                    />
+                  </label>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
