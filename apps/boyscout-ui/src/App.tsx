@@ -20,6 +20,7 @@ export function App({ client }: { client: Client }): ReactElement {
   const [annotations, setAnnotations] = useState<Record<string, Record<string, string>>>({});
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const composeGen = useRef(0);
 
   useEffect(() => {
     void client.state().then((s) => {
@@ -37,9 +38,11 @@ export function App({ client }: { client: Client }): ReactElement {
     if (!questionnaire) return;
     if (composeTimer.current) clearTimeout(composeTimer.current);
     composeTimer.current = setTimeout(() => {
+      const gen = ++composeGen.current;
       const streamed: FeatureT[] = [];
       setViolations([]);
       void client.composeStream(answers, (e) => {
+        if (gen !== composeGen.current) return;
         if (e.event === "feature") {
           streamed.push(JSON.parse(e.data) as FeatureT);
           setFeatures([...streamed]);
