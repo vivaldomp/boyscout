@@ -1,10 +1,12 @@
-import type { SpecificationT } from "@boyscout/schemas";
+import type { AnswersT, QuestionnaireT, SpecificationT } from "@boyscout/schemas";
+import { postSse, type SseEvent } from "./sse.js";
 
 export interface AuthState {
   openui: string;
   ast: SpecificationT | null;
   approvals: Record<string, boolean>;
   errors: { line: number; message: string }[];
+  annotations: Record<string, Record<string, string>>;
 }
 
 /** Read the session token from the URL fragment (`#t=…`). Fragments are never sent to the server or in Referer. */
@@ -35,6 +37,16 @@ export function makeClient(token: string, fetchImpl: typeof fetch = fetch) {
         ok: boolean;
         written?: string[];
         violations?: string[];
+      }>,
+    questionnaire: async (): Promise<QuestionnaireT | null> => {
+      const res = await fetchImpl("/api/questionnaire", { headers });
+      return res.ok ? ((await res.json()) as QuestionnaireT) : null;
+    },
+    composeStream: (answers: AnswersT, onEvent: (e: SseEvent) => void): Promise<void> =>
+      postSse("/api/compose", { answers }, headers, onEvent, fetchImpl),
+    annotate: (featureId: string, path: string, note: string) =>
+      post("/api/annotate", { featureId, path, note }) as Promise<{
+        annotations: Record<string, string>;
       }>,
   };
 }
