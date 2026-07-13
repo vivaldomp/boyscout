@@ -1,0 +1,35 @@
+bridge: astryx-react
+platform: react
+questions:
+  - id: screen
+    type: single
+    prompt: Screen type?
+    options:
+      - value: login
+        contributes:
+          id: login-card
+          capability: component
+          openui: |
+            Card { VStack(2) { Heading(3, "Sign in") Button("primary", "Log in") } }
+      - value: dashboard
+        contributes:
+          id: dashboard-card
+          capability: component
+          openui: |
+            Card { Grid(2) { Heading(3, "Overview") } }
+  - id: sections
+    type: multi
+    prompt: Which sections?
+    enabledWhen:
+      screen: [dashboard]
+    options:
+      - value: header
+        contributes:
+          id: header-bar
+          capability: component
+          openui: 'Card { Heading(2, "Header") }'
+      - value: footer
+        contributes:
+          id: footer-bar
+          capability: component
+          openui: 'Card { Text("body", "Footer") }'
