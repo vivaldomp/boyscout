@@ -15,6 +15,23 @@ function toPascalCase(id: string): string {
   return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
 }
 
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+function escapeText(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\{/g, "&#123;")
+    .replace(/\}/g, "&#125;");
+}
+
 function renderAttrs(props: Record<string, unknown>): string {
   const keys = Object.keys(props)
     .filter((k) => k !== "text")
@@ -22,7 +39,7 @@ function renderAttrs(props: Record<string, unknown>): string {
   return keys
     .map((k) => {
       const v = props[k];
-      return typeof v === "number" ? `${k}={${v}}` : `${k}="${String(v)}"`;
+      return typeof v === "number" ? `${k}={${v}}` : `${k}="${escapeAttr(String(v))}"`;
     })
     .join(" ");
 }
@@ -33,7 +50,7 @@ function renderNode(node: AstNodeT): string {
   const open = attrs ? `<${node.type} ${attrs}>` : `<${node.type}>`;
   let inner = "";
   if (TEXT_CHILD.has(node.type) && typeof props.text === "string") {
-    inner = props.text;
+    inner = escapeText(props.text);
   } else if (node.children) {
     inner = node.children.map(renderNode).join("");
   }

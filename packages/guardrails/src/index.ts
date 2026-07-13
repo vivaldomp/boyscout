@@ -18,6 +18,8 @@ function collectTypes(node: TreeNode, acc: string[]): void {
   if (node.children) for (const child of node.children) collectTypes(child, acc);
 }
 
+const CHILD_TYPE: Record<string, string> = { service: "Method", store: "Action", http: "Endpoint" };
+
 function result(violations: string[]): GuardrailResultT {
   return { ok: violations.length === 0, violations, code: violations.length === 0 ? 200 : 422 };
 }
@@ -38,6 +40,16 @@ export function checkExpressible(
     collectTypes(feature.tree as TreeNode, types);
     for (const t of types) {
       if (!allowed.has(t)) violations.push(`feature ${feature.id}: unknown node type "${t}"`);
+    }
+    const childType = CHILD_TYPE[feature.capability];
+    if (childType) {
+      const tree = feature.tree as TreeNode;
+      const count = (tree.children ?? []).filter((c) => c.type === childType).length;
+      if (count === 0) {
+        violations.push(
+          `feature ${feature.id}: ${feature.capability} has no ${childType} children`,
+        );
+      }
     }
   }
   return result(violations);

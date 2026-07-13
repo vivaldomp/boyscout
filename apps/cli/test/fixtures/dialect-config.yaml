@@ -1,0 +1,4 @@
+platform: react
+bridge: astryx-react
+capabilities:
+  - component

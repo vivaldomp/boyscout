@@ -12,6 +12,7 @@ const fakeBridge: Bridge = {
   registry: {
     capabilities: ["component"],
     nodeTypesFor: (c: string): readonly string[] => (c === "component" ? ["Card", "Text"] : []),
+    paramsFor: () => [],
     providerFor: (cap) =>
       cap === "component"
         ? {
@@ -80,6 +81,7 @@ describe("buildAssets", () => {
       ...fakeBridge,
       registry: {
         ...fakeBridge.registry,
+        paramsFor: () => [],
         providerFor: () => ({
           capability: "component",
           generate: (): Asset[] => [
@@ -103,6 +105,7 @@ describe("buildAssets", () => {
       ...fakeBridge,
       registry: {
         ...fakeBridge.registry,
+        paramsFor: () => [],
         providerFor: () => ({
           capability: "component",
           generate: (): Asset[] => [
@@ -132,6 +135,7 @@ describe("generate", () => {
       ...fakeBridge,
       registry: {
         ...fakeBridge.registry,
+        paramsFor: () => [],
         providerFor: () => ({
           capability: "component",
           generate: (): Asset[] => [{ path: "../evil.tsx", content: "export const x = <Card/>;" }],

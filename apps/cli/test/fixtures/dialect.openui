@@ -1,0 +1,15 @@
+spec version=1 bridge=astryx-react platform=react
+
+component user-card =
+  Card {
+    VStack(2) {
+      Heading(3, "Profile")
+      Text("body", "Member since 2026")
+      Button("primary", "Edit")
+    }
+  }
+
+component escape-demo =
+  Card {
+    Text("body", "Tom \"TJ\" <j> {x} & co")
+  }

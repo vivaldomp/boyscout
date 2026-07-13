@@ -111,6 +111,8 @@ export interface Provider {
 export interface BridgeRegistry {
   readonly capabilities: readonly string[];
   nodeTypesFor(capability: string): readonly string[];
+  /** Ordered positional parameter names for an AST node type (SP4a DSL binding). Unknown type -> []. */
+  paramsFor(nodeType: string): readonly string[];
   providerFor(capability: string): Provider | undefined;
 }
 

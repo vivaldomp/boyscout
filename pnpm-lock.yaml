@@ -29,6 +29,9 @@ importers:
       '@boyscout/determinism':
         specifier: workspace:*
         version: link:../../packages/determinism
+      '@boyscout/dialect':
+        specifier: workspace:*
+        version: link:../../packages/dialect
       '@boyscout/guardrails':
         specifier: workspace:*
         version: link:../../packages/guardrails
@@ -75,6 +78,18 @@ importers:
       '@biomejs/wasm-nodejs':
         specifier: 2.5.3
         version: 2.5.3
+
+  packages/dialect:
+    dependencies:
+      '@boyscout/determinism':
+        specifier: workspace:*
+        version: link:../determinism
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      '@boyscout/spec':
+        specifier: workspace:*
+        version: link:../spec
 
   packages/guardrails:
     dependencies:
