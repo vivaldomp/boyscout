@@ -1,4 +1,4 @@
-import { enabledQuestions } from "@boyscout/questionnaire";
+import { enabledQuestions } from "@boyscout/questionnaire/enabled";
 import type { AnswersT, AstNodeT, QuestionnaireT } from "@boyscout/schemas";
 
 /** Build a Form>Question>Option tree of the enabled questions. Structure is a pure function of (q, answers). */
