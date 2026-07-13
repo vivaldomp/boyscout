@@ -73,13 +73,18 @@ const CORPUS: SpecificationT[] = [
   ),
 ];
 
+const [USER_CARD] = CORPUS;
+if (!USER_CARD) throw new Error("CORPUS must contain the user-card spec");
+
 describe("serializeOpenui + round-trip laws", () => {
   it("serializes the user-card spec to the exact canonical form", () => {
-    expect(serializeOpenui(CORPUS[0]!, mockRegistry)).toBe(CANONICAL);
+    expect(serializeOpenui(USER_CARD, mockRegistry)).toBe(CANONICAL);
   });
 
   for (const s of CORPUS) {
-    const id = s.features[0]!.id;
+    const [firstFeature] = s.features;
+    if (!firstFeature) throw new Error("each CORPUS spec must have exactly one feature");
+    const id = firstFeature.id;
     it(`law 2 (AST-lossless): ${id} -> serialize -> parse == spec`, () => {
       expect(parseOpenui(serializeOpenui(s, mockRegistry), mockRegistry)).toEqual(s);
     });
