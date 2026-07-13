@@ -22,5 +22,8 @@
     "@boyscout/spec": "workspace:*",
     "@hono/node-server": "^2.0.8",
     "hono": "^4.12.30"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.1"
   }
 }

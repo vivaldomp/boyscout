@@ -28,7 +28,9 @@ export function registerCommit(
     const violations: string[] = [];
     if (!spec) violations.push("no valid spec: fix parse/validation errors first");
     else if (spec.features.length === 0) violations.push("no features to commit");
-    else for (const f of spec.features) if (!approvals[f.id]) violations.push(`feature ${f.id} not approved`);
+    else
+      for (const f of spec.features)
+        if (!approvals[f.id]) violations.push(`feature ${f.id} not approved`);
     if (violations.length > 0) return c.json({ ok: false, violations }, 422);
 
     const s = spec as SpecificationT;

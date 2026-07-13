@@ -7,7 +7,11 @@ import { Renderer, type ComponentMap } from "../src/index.js";
 const mock: ComponentMap = {
   Card: ({ children }) => createElement("section", { "data-c": "card" }, children),
   VStack: ({ node, children }) =>
-    createElement("div", { "data-c": "vstack", "data-gap": String(node.props?.gap ?? "") }, children),
+    createElement(
+      "div",
+      { "data-c": "vstack", "data-gap": String(node.props?.gap ?? "") },
+      children,
+    ),
   Text: ({ node }) => createElement("p", null, String(node.props?.text ?? "")),
 };
 

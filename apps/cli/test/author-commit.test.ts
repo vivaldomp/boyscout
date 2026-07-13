@@ -35,18 +35,26 @@ describe("author daemon: commit gate", () => {
     expect(res.status).toBe(422);
     const body = (await res.json()) as { ok: boolean; violations: string[] };
     expect(body.ok).toBe(false);
-    expect(body.violations.some((v: string) => v.includes("card") && v.includes("not approved"))).toBe(true);
+    expect(
+      body.violations.some((v: string) => v.includes("card") && v.includes("not approved")),
+    ).toBe(true);
   });
 
   it("writes canonical spec.json + .openui (byte-identical to the determinism path) once approved", async () => {
     const root = mkdtempSync(join(tmpdir(), "bs-"));
     const { app } = make(root);
-    await app.request("/api/approve", { method: "POST", headers: auth, body: JSON.stringify({ featureId: "card", approved: true }) });
+    await app.request("/api/approve", {
+      method: "POST",
+      headers: auth,
+      body: JSON.stringify({ featureId: "card", approved: true }),
+    });
     const res = await app.request("/api/commit", { method: "POST", headers: auth });
     expect(res.status).toBe(200);
 
     const spec = parseOpenui(OPENUI, registry);
-    expect(hash(readFileSync(join(root, "boyscout-spec.json")))).toBe(hash(writeBytes(canonicalJson(spec))));
+    expect(hash(readFileSync(join(root, "boyscout-spec.json")))).toBe(
+      hash(writeBytes(canonicalJson(spec))),
+    );
     // the .openui round-trips: re-parsing the written file yields the same spec
     const writtenOpenui = readFileSync(join(root, "boyscout.openui"), "utf8");
     expect(parseOpenui(writtenOpenui, registry)).toEqual(spec);

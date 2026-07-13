@@ -37,7 +37,9 @@ describe("safe-identifier pre-barrier", () => {
     const r = checkExpressible(specWithService("Bad Name", "getUser"), reg);
     expect(r.ok).toBe(false);
     expect(r.code).toBe(422);
-    expect(r.violations.some((v) => v.includes("unsafe identifier") && v.includes("Bad Name"))).toBe(true);
+    expect(
+      r.violations.some((v) => v.includes("unsafe identifier") && v.includes("Bad Name")),
+    ).toBe(true);
   });
 
   it("rejects a path-traversal name outright", () => {

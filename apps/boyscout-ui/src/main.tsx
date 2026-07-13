@@ -9,4 +9,9 @@ if (window.location.hash) {
   window.history.replaceState(null, "", window.location.pathname + window.location.search);
 }
 const root = document.getElementById("root");
-if (root) createRoot(root).render(<StrictMode><App client={client} /></StrictMode>);
+if (root)
+  createRoot(root).render(
+    <StrictMode>
+      <App client={client} />
+    </StrictMode>,
+  );

@@ -11,7 +11,10 @@ describe("api client", () => {
     const calls: { url: string; headers: Record<string, string> }[] = [];
     const fakeFetch = (async (url: string, init?: RequestInit) => {
       calls.push({ url: String(url), headers: (init?.headers ?? {}) as Record<string, string> });
-      return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
     }) as unknown as typeof fetch;
 
     const client = makeClient("tok", fakeFetch);

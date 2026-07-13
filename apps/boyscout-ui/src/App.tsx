@@ -41,14 +41,24 @@ export function App({ client }: { client: Client }): ReactElement {
 
   const commit = (): void => {
     void client.commit().then((r) => {
-      setMessage(r.ok ? `Wrote: ${r.written?.join(", ")}` : `Cannot write: ${r.violations?.join("; ")}`);
+      setMessage(
+        r.ok ? `Wrote: ${r.written?.join(", ")}` : `Cannot write: ${r.violations?.join("; ")}`,
+      );
     });
   };
 
   const allApproved = features.length > 0 && features.every((f) => approvals[f.id]);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, height: "100vh", padding: 12 }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 12,
+        height: "100vh",
+        padding: 12,
+      }}
+    >
       <div style={{ display: "flex", flexDirection: "column" }}>
         <textarea
           data-testid="editor"
@@ -59,7 +69,9 @@ export function App({ client }: { client: Client }): ReactElement {
         {errors.length > 0 && (
           <ul data-testid="errors" style={{ color: "crimson", fontFamily: "monospace" }}>
             {errors.map((e, i) => (
-              <li key={i}>line {e.line}: {e.message}</li>
+              <li key={i}>
+                line {e.line}: {e.message}
+              </li>
             ))}
           </ul>
         )}

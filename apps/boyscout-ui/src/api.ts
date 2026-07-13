@@ -20,8 +20,21 @@ export function makeClient(token: string, fetchImpl: typeof fetch = fetch) {
   };
   return {
     state: async (): Promise<AuthState> => (await fetchImpl("/api/state", { headers })).json(),
-    parse: (text: string) => post("/api/parse", { text }) as Promise<{ ok: boolean; ast: SpecificationT | null; errors: AuthState["errors"] }>,
-    approve: (featureId: string, approved: boolean) => post("/api/approve", { featureId, approved }) as Promise<{ approvals: Record<string, boolean> }>,
-    commit: () => post("/api/commit", {}) as Promise<{ ok: boolean; written?: string[]; violations?: string[] }>,
+    parse: (text: string) =>
+      post("/api/parse", { text }) as Promise<{
+        ok: boolean;
+        ast: SpecificationT | null;
+        errors: AuthState["errors"];
+      }>,
+    approve: (featureId: string, approved: boolean) =>
+      post("/api/approve", { featureId, approved }) as Promise<{
+        approvals: Record<string, boolean>;
+      }>,
+    commit: () =>
+      post("/api/commit", {}) as Promise<{
+        ok: boolean;
+        written?: string[];
+        violations?: string[];
+      }>,
   };
 }

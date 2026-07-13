@@ -11,12 +11,7 @@ function renderNode(node: AstNodeT, components: ComponentMap, key: number): Reac
   const kids = (node.children ?? []).map((c, i) => renderNode(c, components, i));
   const Comp = components[node.type];
   if (!Comp) {
-    return createElement(
-      "div",
-      { key, "data-unknown-node": node.type },
-      `⟨${node.type}⟩`,
-      ...kids,
-    );
+    return createElement("div", { key, "data-unknown-node": node.type }, `⟨${node.type}⟩`, ...kids);
   }
   return createElement(Comp, { key, node }, kids.length > 0 ? kids : undefined);
 }

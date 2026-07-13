@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@astryxdesign/core": "0.1.4",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@boyscout/bridge-astryx-react": "workspace:*",
+    "@playwright/test": "^1.61.1",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "esbuild": "^0.28.0",

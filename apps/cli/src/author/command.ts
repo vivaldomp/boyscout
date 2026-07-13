@@ -28,7 +28,8 @@ export function authorCommand(argv: string[]): number {
   const uiDist = resolve(
     flag(argv, "--ui-dist", fileURLToPath(new URL("../../../boyscout-ui/dist", import.meta.url))),
   );
-  const token = randomBytes(24).toString("hex");
+  // BOYSCOUT_AUTH_TOKEN overrides the CSPRNG token for deterministic E2E only; unset in normal use.
+  const token = process.env.BOYSCOUT_AUTH_TOKEN ?? randomBytes(24).toString("hex");
   const selfOrigin = `http://${host}:${port}`;
   const initialOpenui = existsSync(openuiPath) ? readFileSync(openuiPath, "utf8") : "";
 
@@ -49,9 +50,12 @@ export function authorCommand(argv: string[]): number {
     const indexHtml = resolve(uiDist, "index.html");
     const inside = abs === uiDist || abs.startsWith(uiDist + sep);
     const file = inside && existsSync(abs) ? abs : indexHtml;
-    if (!existsSync(file)) return c.text("boyscout-ui not built (run: pnpm --filter boyscout-ui build)", 500);
+    if (!existsSync(file))
+      return c.text("boyscout-ui not built (run: pnpm --filter boyscout-ui build)", 500);
     const body = readFileSync(file);
-    return new Response(body, { headers: { "content-type": MIME[extname(file)] ?? "application/octet-stream" } });
+    return new Response(body, {
+      headers: { "content-type": MIME[extname(file)] ?? "application/octet-stream" },
+    });
   });
 
   serve({ fetch: app.fetch, hostname: host, port });
