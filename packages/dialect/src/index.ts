@@ -2,7 +2,6 @@ import type { SpecificationT } from "@boyscout/schemas";
 import { validateSpec } from "@boyscout/spec";
 import { bind, type DialectRegistry } from "./bind.js";
 import { parseOpenuiRaw } from "./parse.js";
-import { serializeOpenui } from "./serialize.js";
 
 export { DialectError } from "./parse.js";
 export type { DialectRegistry } from "./bind.js";
