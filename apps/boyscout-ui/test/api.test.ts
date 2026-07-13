@@ -31,7 +31,8 @@ describe("api client — guided", () => {
     const fakeFetch = (async (url: string, init?: RequestInit) => {
       calls.push({ url: String(url), body: String(init?.body ?? "") });
       return new Response(JSON.stringify({ annotations: { "0": "n" } }), {
-        status: 200, headers: { "content-type": "application/json" },
+        status: 200,
+        headers: { "content-type": "application/json" },
       });
     }) as unknown as typeof fetch;
     const client = makeClient2("tok", fakeFetch);

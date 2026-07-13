@@ -85,10 +85,13 @@ export function App({ client }: { client: Client }): ReactElement {
   };
 
   const setNote = (featureId: string, pathKey: string, note: string): void => {
-    setAnnotations((prev) => ({ ...prev, [featureId]: { ...(prev[featureId] ?? {}), [pathKey]: note } }));
-    void client.annotate(featureId, pathKey, note).then((r) =>
-      setAnnotations((prev) => ({ ...prev, [featureId]: r.annotations })),
-    );
+    setAnnotations((prev) => ({
+      ...prev,
+      [featureId]: { ...(prev[featureId] ?? {}), [pathKey]: note },
+    }));
+    void client
+      .annotate(featureId, pathKey, note)
+      .then((r) => setAnnotations((prev) => ({ ...prev, [featureId]: r.annotations })));
   };
 
   const commit = (): void => {
@@ -102,11 +105,22 @@ export function App({ client }: { client: Client }): ReactElement {
   const allApproved = features.length > 0 && features.every((f) => approvals[f.id]);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, height: "100vh", padding: 12 }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 12,
+        height: "100vh",
+        padding: 12,
+      }}
+    >
       <div style={{ display: "flex", flexDirection: "column", overflow: "auto" }}>
         {questionnaire && (
           <AnswerContext.Provider value={{ answers, onAnswer }}>
-            <Renderer ast={questionnaireToTree(questionnaire, answers)} components={formComponents} />
+            <Renderer
+              ast={questionnaireToTree(questionnaire, answers)}
+              components={formComponents}
+            />
           </AnswerContext.Provider>
         )}
         {violations.length > 0 && (

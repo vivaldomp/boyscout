@@ -27,7 +27,10 @@ export function registerGuided(
     const result = compose(q, body.answers ?? {}, registry);
     return streamSSE(c, async (stream) => {
       if (!result.ok) {
-        await stream.writeSSE({ event: "violations", data: JSON.stringify({ violations: result.violations }) });
+        await stream.writeSSE({
+          event: "violations",
+          data: JSON.stringify({ violations: result.violations }),
+        });
         return;
       }
       for (const f of result.spec.features) {

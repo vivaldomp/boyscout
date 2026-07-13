@@ -11,17 +11,28 @@ const Q: QuestionnaireT = {
   bridge: "astryx-react",
   platform: "react",
   questions: [
-    { id: "screen", type: "single", prompt: "Screen?", options: [
-      { value: "login", contributes: { id: "a", capability: "component", openui: "Card {}" } },
-      { value: "dashboard", contributes: { id: "b", capability: "component", openui: "Card {}" } },
-    ] },
+    {
+      id: "screen",
+      type: "single",
+      prompt: "Screen?",
+      options: [
+        { value: "login", contributes: { id: "a", capability: "component", openui: "Card {}" } },
+        {
+          value: "dashboard",
+          contributes: { id: "b", capability: "component", openui: "Card {}" },
+        },
+      ],
+    },
   ],
 };
 
 function html(ast: AstNodeT, answers: Record<string, string | string[]>): string {
   return renderToStaticMarkup(
-    createElement(AnswerContext.Provider, { value: { answers, onAnswer: () => {} } },
-      createElement(Renderer, { ast, components: formComponents })),
+    createElement(
+      AnswerContext.Provider,
+      { value: { answers, onAnswer: () => {} } },
+      createElement(Renderer, { ast, components: formComponents }),
+    ),
   );
 }
 
@@ -32,7 +43,10 @@ describe("formComponents", () => {
     expect(out).toContain("Screen?");
     // exactly one radio is checked, and it is the dashboard input (its testid precedes `checked`)
     expect((out.match(/checked=""/g) ?? []).length).toBe(1);
-    const dashInput = out.slice(out.indexOf("opt-screen-dashboard"), out.indexOf("opt-screen-dashboard") + 60);
+    const dashInput = out.slice(
+      out.indexOf("opt-screen-dashboard"),
+      out.indexOf("opt-screen-dashboard") + 60,
+    );
     expect(dashInput).toContain("checked");
   });
 

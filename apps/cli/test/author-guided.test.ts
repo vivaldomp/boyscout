@@ -21,8 +21,13 @@ questions:
 
 function make() {
   return createAuthApp({
-    registry, token: TOKEN, selfOrigin: "http://127.0.0.1:4517",
-    initialOpenui: "", specPath: "/tmp/x/spec.json", openuiPath: "/tmp/x/b.openui", projectRoot: "/tmp/x",
+    registry,
+    token: TOKEN,
+    selfOrigin: "http://127.0.0.1:4517",
+    initialOpenui: "",
+    specPath: "/tmp/x/spec.json",
+    openuiPath: "/tmp/x/b.openui",
+    projectRoot: "/tmp/x",
     questionnaire: parseQuestionnaire(YAML),
   });
 }
@@ -32,15 +37,18 @@ const compose = (app: ReturnType<typeof make>["app"], answers: unknown) =>
 /** Collect SSE frames from a Response body into {event,data} pairs. */
 async function frames(res: Response): Promise<{ event: string; data: string }[]> {
   const text = await res.text();
-  return text.split("\n\n").filter((f) => f.includes("data:")).map((f) => {
-    let event = "message";
-    const data: string[] = [];
-    for (const line of f.split("\n")) {
-      if (line.startsWith("event:")) event = line.slice(6).trim();
-      else if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
-    }
-    return { event, data: data.join("\n") };
-  });
+  return text
+    .split("\n\n")
+    .filter((f) => f.includes("data:"))
+    .map((f) => {
+      let event = "message";
+      const data: string[] = [];
+      for (const line of f.split("\n")) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        else if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
+      }
+      return { event, data: data.join("\n") };
+    });
 }
 
 describe("guided endpoints", () => {
@@ -53,8 +61,13 @@ describe("guided endpoints", () => {
 
   it("returns 404 when no questionnaire is configured", async () => {
     const app2 = createAuthApp({
-      registry, token: TOKEN, selfOrigin: "http://127.0.0.1:4517",
-      initialOpenui: "", specPath: "/tmp/x/s.json", openuiPath: "/tmp/x/b.openui", projectRoot: "/tmp/x",
+      registry,
+      token: TOKEN,
+      selfOrigin: "http://127.0.0.1:4517",
+      initialOpenui: "",
+      specPath: "/tmp/x/s.json",
+      openuiPath: "/tmp/x/b.openui",
+      projectRoot: "/tmp/x",
     }).app;
     expect((await app2.request("/api/questionnaire", { headers: auth })).status).toBe(404);
   });

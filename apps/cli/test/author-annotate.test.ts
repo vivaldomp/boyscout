@@ -13,8 +13,13 @@ component card =
 
 function make() {
   return createAuthApp({
-    registry, token: TOKEN, selfOrigin: "http://127.0.0.1:4517",
-    initialOpenui: OPENUI, specPath: "/tmp/x/spec.json", openuiPath: "/tmp/x/b.openui", projectRoot: "/tmp/x",
+    registry,
+    token: TOKEN,
+    selfOrigin: "http://127.0.0.1:4517",
+    initialOpenui: OPENUI,
+    specPath: "/tmp/x/spec.json",
+    openuiPath: "/tmp/x/b.openui",
+    projectRoot: "/tmp/x",
   });
 }
 const annotate = (app: ReturnType<typeof make>["app"], body: unknown) =>
@@ -28,7 +33,9 @@ describe("annotations side-car", () => {
   it("stores a note at a node path and returns it in state", async () => {
     const { app } = make();
     const res = await annotate(app, { featureId: "card", path: "0", note: "the text node" });
-    expect(((await res.json()) as { annotations: Record<string, string> }).annotations).toEqual({ "0": "the text node" });
+    expect(((await res.json()) as { annotations: Record<string, string> }).annotations).toEqual({
+      "0": "the text node",
+    });
     expect((await state(app)).annotations).toEqual({ card: { "0": "the text node" } });
   });
 

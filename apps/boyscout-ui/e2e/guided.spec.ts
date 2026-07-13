@@ -11,7 +11,9 @@ const uiDist = resolve(here, "../dist");
 const cliBin = resolve(repoRoot, "apps/cli/src/bin.ts");
 const PORT = 4601;
 const TOKEN = "e2e-guided-token";
-const tsxLoader = pathToFileURL(resolve(repoRoot, "apps/cli/node_modules/tsx/dist/loader.mjs")).href;
+const tsxLoader = pathToFileURL(
+  resolve(repoRoot, "apps/cli/node_modules/tsx/dist/loader.mjs"),
+).href;
 
 let daemon: ChildProcess;
 let projectDir: string;
@@ -23,17 +25,35 @@ test.beforeAll(async () => {
 
   daemon = spawn(
     "node",
-    ["--import", tsxLoader, cliBin, "author",
-      "--openui", "./boyscout.openui",
-      "--spec", "./boyscout-spec.json",
-      "--questionnaire", "./q.yaml",
-      "--port", String(PORT), "--ui-dist", uiDist],
+    [
+      "--import",
+      tsxLoader,
+      cliBin,
+      "author",
+      "--openui",
+      "./boyscout.openui",
+      "--spec",
+      "./boyscout-spec.json",
+      "--questionnaire",
+      "./q.yaml",
+      "--port",
+      String(PORT),
+      "--ui-dist",
+      uiDist,
+    ],
     { cwd: projectDir, env: { ...process.env, BOYSCOUT_AUTH_TOKEN: TOKEN }, stdio: "inherit" },
   );
   await expect
-    .poll(async () => {
-      try { return (await fetch(`http://127.0.0.1:${PORT}/`)).status; } catch { return 0; }
-    }, { timeout: 20_000 })
+    .poll(
+      async () => {
+        try {
+          return (await fetch(`http://127.0.0.1:${PORT}/`)).status;
+        } catch {
+          return 0;
+        }
+      },
+      { timeout: 20_000 },
+    )
     .toBe(200);
 });
 

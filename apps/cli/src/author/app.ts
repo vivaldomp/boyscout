@@ -102,7 +102,13 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
   reparse(opts.initialOpenui);
   openui = opts.initialOpenui;
 
-  const snapshot = (): AuthState => ({ openui, ast: spec, approvals, errors, annotations: notesAll() });
+  const snapshot = (): AuthState => ({
+    openui,
+    ast: spec,
+    approvals,
+    errors,
+    annotations: notesAll(),
+  });
 
   const app = new Hono();
 

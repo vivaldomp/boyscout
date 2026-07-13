@@ -17,7 +17,12 @@ export function questionnaireToTree(q: QuestionnaireT, answers: AnswersT): AstNo
 }
 
 /** Next answers after clicking an option: single replaces, multi toggles membership. */
-export function toggleAnswer(answers: AnswersT, qid: string, value: string, kind: string): AnswersT {
+export function toggleAnswer(
+  answers: AnswersT,
+  qid: string,
+  value: string,
+  kind: string,
+): AnswersT {
   if (kind === "single") return { ...answers, [qid]: value };
   const cur = answers[qid];
   const list = Array.isArray(cur) ? cur : [];
