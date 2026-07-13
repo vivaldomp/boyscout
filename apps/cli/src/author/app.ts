@@ -2,6 +2,7 @@ import { canonicalJson, hash, writeBytes } from "@boyscout/determinism";
 import { DialectError, type DialectRegistry, parseOpenui } from "@boyscout/dialect";
 import type { SpecificationT } from "@boyscout/schemas";
 import { Hono } from "hono";
+import { registerCommit } from "./commit.js";
 
 export interface AuthAppOptions {
   registry: DialectRegistry;
@@ -97,12 +98,3 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
 
   return { app, snapshot };
 }
-
-// TEMPORARY — replaced in Task 4 by ./commit.ts
-function registerCommit(
-  _app: Hono,
-  _opts: AuthAppOptions,
-  _getSpec: () => SpecificationT | null,
-  _getApprovals: () => Record<string, boolean>,
-  _registry: DialectRegistry,
-): void {}

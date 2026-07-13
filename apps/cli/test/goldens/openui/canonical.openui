@@ -1,0 +1,9 @@
+spec version=1 bridge=astryx-react platform=react
+
+component card =
+  Card {
+    VStack(2) {
+      Heading(3, "Profile")
+      Text("body", "Member since 2026")
+    }
+  }

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { bridge } from "@boyscout/bridge-astryx-react";
 import { GateError, generate, loadConfig } from "@boyscout/runtime";
+import { authorCommand } from "./author/command.js";
 
 function flag(argv: string[], name: string, fallback: string): string {
   const i = argv.indexOf(name);
@@ -11,8 +12,11 @@ function flag(argv: string[], name: string, fallback: string): string {
 /** `boyscout generate [--spec ./boyscout-spec.json] [--config ./boyscout.config.yaml]`. Returns an exit code. */
 export function main(argv: string[]): number {
   const command = argv[0];
+  if (command === "author") return authorCommand(argv.slice(1));
   if (command !== "generate") {
-    process.stderr.write(`unknown command: ${command ?? "(none)"}\nusage: boyscout generate\n`);
+    process.stderr.write(
+      `unknown command: ${command ?? "(none)"}\nusage: boyscout generate | boyscout author\n`,
+    );
     return 1;
   }
   const specPath = flag(argv, "--spec", "./boyscout-spec.json");
