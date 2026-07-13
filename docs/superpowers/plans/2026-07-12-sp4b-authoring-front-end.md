@@ -66,7 +66,7 @@
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "@types/react": "19.2.17",
-    "@types/react-dom": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "typescript": "5.9.3"
   }
 }
@@ -988,7 +988,7 @@ git commit -m "feat(cli): author commit gate + writeBytes persistence + boyscout
   "devDependencies": {
     "@boyscout/bridge-astryx-react": "workspace:*",
     "@types/react": "19.2.17",
-    "@types/react-dom": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "typescript": "5.9.3",
     "vite": "8.1.4"
   }
