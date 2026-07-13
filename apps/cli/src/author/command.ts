@@ -58,7 +58,13 @@ export function authorCommand(argv: string[]): number {
     });
   });
 
-  serve({ fetch: app.fetch, hostname: host, port });
-  process.stdout.write(`boyscout author: open ${selfOrigin}/#t=${token}\n`);
+  // Print the URL only once the socket is actually listening — never for a server that failed to bind.
+  const server = serve({ fetch: app.fetch, hostname: host, port }, () => {
+    process.stdout.write(`boyscout author: open ${selfOrigin}/#t=${token}\n`);
+  });
+  server.on("error", (err: Error) => {
+    process.stderr.write(`boyscout author: failed to start on ${selfOrigin}: ${err.message}\n`);
+    process.exit(1);
+  });
   return 0;
 }
