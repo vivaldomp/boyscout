@@ -1,8 +1,9 @@
 import { canonicalJson, hash, writeBytes } from "@boyscout/determinism";
 import { DialectError, type DialectRegistry, parseOpenui } from "@boyscout/dialect";
-import type { AstNodeT, SpecificationT } from "@boyscout/schemas";
+import type { AstNodeT, QuestionnaireT, SpecificationT } from "@boyscout/schemas";
 import { Hono } from "hono";
 import { registerCommit } from "./commit.js";
+import { registerGuided } from "./guided.js";
 
 export interface AuthAppOptions {
   registry: DialectRegistry;
@@ -14,6 +15,8 @@ export interface AuthAppOptions {
   openuiPath: string;
   /** Absolute project root; commit writes must stay within it. */
   projectRoot: string;
+  /** When set, guided-authoring routes serve this questionnaire. */
+  questionnaire?: QuestionnaireT;
 }
 
 export interface AuthState {
@@ -148,6 +151,13 @@ export function createAuthApp(opts: AuthAppOptions): { app: Hono; snapshot: () =
     }
     return c.json({ annotations: notesAll()[featureId] ?? {} });
   });
+
+  registerGuided(
+    app,
+    registry,
+    () => opts.questionnaire,
+    (text) => reparse(text),
+  );
 
   // commit route added in Task 4 (needs writeBytes + path shielding)
   registerCommit(
