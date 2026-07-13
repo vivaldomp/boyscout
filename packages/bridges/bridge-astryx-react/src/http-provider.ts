@@ -19,6 +19,8 @@ interface Endpoint {
   name: string;
   method: string;
   path: string;
+  pathLiteral: string;
+  methodLiteral: string;
   response: string;
 }
 
@@ -27,10 +29,14 @@ function endpointsOf(tree: AstNodeT): Endpoint[] {
     .filter((c) => c.type === "Endpoint")
     .map((c) => {
       const p = c.props ?? {};
+      const method = String(p.method ?? "GET");
+      const path = String(p.path ?? "/");
       return {
         name: String(p.name ?? ""),
-        method: String(p.method ?? "GET"),
-        path: String(p.path ?? "/"),
+        method,
+        path,
+        pathLiteral: JSON.stringify(path),
+        methodLiteral: JSON.stringify(method),
         response: String(p.response ?? "unknown"),
       };
     });

@@ -28,7 +28,11 @@ describe("checkExpressible zero-child logic-bearing guard", () => {
   });
   it("accepts a service with a Method child", () => {
     const r = checkExpressible(
-      spec("service", { type: "Service", props: { name: "S" }, children: [{ type: "Method" }] }),
+      spec("service", {
+        type: "Service",
+        props: { name: "S" },
+        children: [{ type: "Method", props: { name: "m" } }],
+      }),
       reg,
     );
     expect(r.ok).toBe(true);
