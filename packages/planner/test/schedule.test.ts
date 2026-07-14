@@ -66,4 +66,10 @@ describe("schedule", () => {
       }),
     ).rejects.toThrow(/cycle/i);
   });
+
+  it("rejects a non-positive concurrency instead of hanging", async () => {
+    await expect(
+      schedule(graph(["a", "b"]), async (id) => id, { concurrency: 0 }),
+    ).rejects.toThrow(/concurrency/i);
+  });
 });

@@ -27,6 +27,10 @@ export async function schedule<T>(
   runNode: (nodeId: string) => Promise<T>,
   opts: { concurrency: number },
 ): Promise<T[]> {
+  if (!Number.isInteger(opts.concurrency) || opts.concurrency < 1) {
+    throw new Error(`schedule: concurrency must be a positive integer, got ${opts.concurrency}`);
+  }
+
   const orderIndex = new Map<string, number>(graph.ordering.map((id, i) => [id, i]));
   const indeg = new Map<string, number>(graph.ordering.map((id) => [id, 0]));
   const dependents = new Map<string, string[]>(graph.ordering.map((id) => [id, []]));
