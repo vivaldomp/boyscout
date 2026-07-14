@@ -1,0 +1,48 @@
+{
+  "version": "1",
+  "features": [
+    {
+      "id": "user-card",
+      "capability": "component",
+      "tree": { "type": "Card", "children": [
+        { "type": "CardTitle", "props": { "text": "Overview" } },
+        { "type": "CardContent", "children": [ { "type": "List", "children": [ { "type": "ListItem", "props": { "text": "Alice" } } ] } ] }
+      ] },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    },
+    {
+      "id": "signup-form",
+      "capability": "form",
+      "tree": { "type": "Form", "props": { "name": "Signup" }, "children": [
+        { "type": "Field", "props": { "name": "email", "label": "Email", "type": "text" } },
+        { "type": "Field", "props": { "name": "age", "label": "Age", "type": "number" } }
+      ] },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    },
+    {
+      "id": "app-routes",
+      "capability": "route",
+      "tree": { "type": "Routes", "children": [
+        { "type": "Route", "props": { "path": "users", "component": "UserCard" } }
+      ] },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    },
+    {
+      "id": "users-api",
+      "capability": "http",
+      "tree": { "type": "Http", "props": { "name": "UsersApi" }, "children": [
+        { "type": "Endpoint", "props": { "name": "getUsers", "method": "GET", "path": "/users", "response": "string[]" } }
+      ] },
+      "annotations": {},
+      "props": {},
+      "approved": true
+    }
+  ],
+  "metadata": { "bridge": "material", "platform": "angular", "checksum": "" }
+}

@@ -1,0 +1,7 @@
+platform: angular
+bridge: material
+capabilities:
+  - component
+  - form
+  - route
+  - http
