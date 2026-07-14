@@ -1,14 +1,16 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, posix, win32 } from "node:path";
-import { format, type FormatLang, writeBytes } from "@boyscout/determinism";
+import { createFormatPool, format, type FormatLang, writeBytes } from "@boyscout/determinism";
 import { checkAssets } from "@boyscout/guardrails";
-import { plan } from "@boyscout/planner";
+import { plan, schedule } from "@boyscout/planner";
 import {
   BoyscoutConfig,
   type Asset,
   type Bridge,
   type BoyscoutConfigT,
+  type ExecutionGraphT,
   type FeatureT,
+  type SpecificationT,
 } from "@boyscout/schemas";
 import { validateSpec } from "@boyscout/spec";
 import { parse as parseYaml } from "yaml";
@@ -52,52 +54,94 @@ function langOf(path: string): FormatLang {
   return lang;
 }
 
-/** resolve() -> validate() -> plan() -> generate() -> format() -> verify(). Returns formatted assets; no emit. */
-export function buildAssets(opts: BuildOpts): Asset[] {
+/** Shared prelude: resolve bridge match, validate, metadata check, plan. Returns graph + feature map. */
+function prepare(opts: BuildOpts): {
+  spec: SpecificationT;
+  graph: ExecutionGraphT;
+  featureById: Map<string, FeatureT>;
+  bridge: Bridge;
+} {
   const { config, bridge } = opts;
-
-  // resolve(): the loaded bridge must match the composition the config/spec declares.
   if (config.bridge !== bridge.id) {
     throw new Error(`config bridge "${config.bridge}" != loaded bridge "${bridge.id}"`);
   }
-
-  // validate(): Zod gate + pre-barrier.
   const validated = validateSpec(opts.specInput, bridge.registry);
   if (!validated.ok) throw new GateError(validated.violations);
   const spec = validated.spec;
-
   if (spec.metadata.bridge !== bridge.id || spec.metadata.platform !== bridge.platform) {
     throw new Error(`spec metadata (${spec.metadata.bridge}/${spec.metadata.platform}) != bridge`);
   }
-
-  // plan(): deterministic ordering.
   const graph = plan(spec);
   const featureById = new Map<string, FeatureT>(spec.features.map((f) => [f.id, f]));
+  return { spec, graph, featureById, bridge };
+}
 
-  // generate() + format(), in graph order.
+/** Shared post-barrier: scaffold assets only (durable human bodies are lint-level, D2d). */
+function postBarrier(assets: Asset[], bridge: Bridge): Asset[] {
+  const gate = checkAssets(assets.filter((a) => !a.durable), bridge.postRules);
+  if (!gate.ok) throw new GateError(gate.violations);
+  return assets;
+}
+
+/** Generate + format one node's assets (main-thread format). */
+function generateNodeSync(feature: FeatureT, bridge: Bridge): Asset[] {
+  const provider = bridge.registry.providerFor(feature.capability);
+  if (!provider) throw new Error(`no provider for capability "${feature.capability}"`);
+  return provider.generate(feature).map((raw) => ({
+    path: raw.path,
+    content: format(raw.content, langOf(raw.path)),
+    ...(raw.durable !== undefined ? { durable: raw.durable } : {}),
+  }));
+}
+
+/** resolve() -> validate() -> plan() -> generate() -> format() -> verify(). Returns formatted assets; no emit. */
+export function buildAssets(opts: BuildOpts): Asset[] {
+  const { graph, featureById, bridge } = prepare(opts);
   const assets: Asset[] = [];
   for (const id of graph.ordering) {
     const feature = featureById.get(id);
     if (!feature) throw new Error(`graph node "${id}" has no feature`);
-    const provider = bridge.registry.providerFor(feature.capability);
-    if (!provider) throw new Error(`no provider for capability "${feature.capability}"`);
-    for (const raw of provider.generate(feature)) {
-      assets.push({
-        path: raw.path,
-        content: format(raw.content, langOf(raw.path)),
-        ...(raw.durable !== undefined ? { durable: raw.durable } : {}),
-      });
-    }
+    assets.push(...generateNodeSync(feature, bridge));
   }
+  return postBarrier(assets, bridge);
+}
 
-  // verify(): post-barrier — scaffold assets only (durable human bodies are lint-level, D2d).
-  const gate = checkAssets(
-    assets.filter((a) => !a.durable),
-    bridge.postRules,
-  );
-  if (!gate.ok) throw new GateError(gate.violations);
-
-  return assets;
+/**
+ * Opt-in parallel executor (D8). Same pipeline as buildAssets, but format() runs on a
+ * worker pool while generate() stays main-thread (keeps runtime bridge-agnostic). Output
+ * is reassembled to graph order by schedule(), so it is byte-identical to buildAssets.
+ * NOT the default: small specs are net-slower (worker/WASM overhead). See parallel benchmark.
+ */
+export async function buildAssetsParallel(
+  opts: BuildOpts,
+  poolOpts: { concurrency?: number } = {},
+): Promise<Asset[]> {
+  const { graph, featureById, bridge } = prepare(opts);
+  const size = Math.max(1, Math.min(poolOpts.concurrency ?? 4, graph.ordering.length || 1));
+  const pool = createFormatPool({ size });
+  try {
+    const perNode = await schedule<Asset[]>(
+      graph,
+      async (id) => {
+        const feature = featureById.get(id);
+        if (!feature) throw new Error(`graph node "${id}" has no feature`);
+        const provider = bridge.registry.providerFor(feature.capability);
+        if (!provider) throw new Error(`no provider for capability "${feature.capability}"`);
+        const raws = provider.generate(feature); // main-thread, cheap
+        return Promise.all(
+          raws.map(async (raw) => ({
+            path: raw.path,
+            content: await pool.format(raw.content, langOf(raw.path)),
+            ...(raw.durable !== undefined ? { durable: raw.durable } : {}),
+          })),
+        );
+      },
+      { concurrency: graph.ordering.length || 1 },
+    );
+    return postBarrier(perNode.flat(), bridge);
+  } finally {
+    await pool.close();
+  }
 }
 
 export interface GenerateResult {
