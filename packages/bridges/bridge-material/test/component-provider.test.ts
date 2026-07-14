@@ -9,7 +9,10 @@ const feature: FeatureT = {
     type: "Card",
     children: [
       { type: "CardTitle", props: { text: "Profile & <Overview>" } },
-      { type: "CardContent", children: [{ type: "List", children: [{ type: "ListItem", props: { text: "Alice" } }] }] },
+      {
+        type: "CardContent",
+        children: [{ type: "List", children: [{ type: "ListItem", props: { text: "Alice" } }] }],
+      },
     ],
   },
   annotations: {},

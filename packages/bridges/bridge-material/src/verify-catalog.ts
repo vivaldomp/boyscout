@@ -32,9 +32,7 @@ export function verifyMaterialCatalog(): void {
       .getPreEmitDiagnostics(program)
       .filter((d) => d.code === 2307 || d.code === 2305 || d.code === 2724);
     if (diags.length > 0) {
-      const msg = diags
-        .map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"))
-        .join("; ");
+      const msg = diags.map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n")).join("; ");
       throw new Error(`material catalog self-verification failed: ${msg}`);
     }
   } finally {

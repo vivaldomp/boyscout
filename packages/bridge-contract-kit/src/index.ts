@@ -97,13 +97,16 @@ export function runSeamContract(opts: {
       const scaffold = fx.assets.find((a) => !a.durable);
       const stub = fx.assets.find((a) => a.durable);
       it(`${fx.label} — generated stub satisfies the generated contract`, () => {
-        if (!scaffold || !stub) throw new Error(`fixture "${fx.label}" needs scaffold + durable stub`);
+        if (!scaffold || !stub)
+          throw new Error(`fixture "${fx.label}" needs scaffold + durable stub`);
         expect(diagnose(scaffold, stub)).toHaveLength(0);
       });
       it(`${fx.label} — a drifted stub is a compile error`, () => {
         if (!scaffold || !stub) throw new Error(`fixture "${fx.label}" needs scaffold + stub`);
         // Reuse the durable stub's real path so the scaffold's import resolves; only the type drifts.
-        expect(diagnose(scaffold, { path: stub.path, content: fx.driftedContent }).length).toBeGreaterThan(0);
+        expect(
+          diagnose(scaffold, { path: stub.path, content: fx.driftedContent }).length,
+        ).toBeGreaterThan(0);
       });
     }
   });

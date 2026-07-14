@@ -11,7 +11,9 @@ const serviceFeature: FeatureT = {
   tree: {
     type: "Service",
     props: { name: "UserService" },
-    children: [{ type: "Method", props: { name: "getUsers", params: "", returns: "Promise<string[]>" } }],
+    children: [
+      { type: "Method", props: { name: "getUsers", params: "", returns: "Promise<string[]>" } },
+    ],
   },
   annotations: {},
   props: {},
@@ -39,7 +41,10 @@ const httpFeature: FeatureT = {
     type: "Http",
     props: { name: "UsersApi" },
     children: [
-      { type: "Endpoint", props: { name: "getUsers", method: "GET", path: "/users", response: "string[]" } },
+      {
+        type: "Endpoint",
+        props: { name: "getUsers", method: "GET", path: "/users", response: "string[]" },
+      },
     ],
   },
   annotations: {},

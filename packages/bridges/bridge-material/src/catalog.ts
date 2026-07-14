@@ -17,7 +17,11 @@ export const CATALOG: Record<string, CatalogEntry> = {
     symbol: "MatCardContent",
     importPath: "@angular/material/card",
   },
-  Toolbar: { selector: "mat-toolbar", symbol: "MatToolbar", importPath: "@angular/material/toolbar" },
+  Toolbar: {
+    selector: "mat-toolbar",
+    symbol: "MatToolbar",
+    importPath: "@angular/material/toolbar",
+  },
   List: { selector: "mat-list", symbol: "MatList", importPath: "@angular/material/list" },
   ListItem: {
     selector: "mat-list-item",

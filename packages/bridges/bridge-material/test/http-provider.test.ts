@@ -10,7 +10,10 @@ const feature: FeatureT = {
     type: "Http",
     props: { name: "UsersApi" },
     children: [
-      { type: "Endpoint", props: { name: "getUsers", method: "GET", path: "/users", response: "string[]" } },
+      {
+        type: "Endpoint",
+        props: { name: "getUsers", method: "GET", path: "/users", response: "string[]" },
+      },
     ],
   },
   annotations: {},

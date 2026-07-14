@@ -13,9 +13,7 @@ describe("selectBridge", () => {
 });
 
 describe("material generation via the runtime (agnostic, unchanged runtime)", () => {
-  const config = loadConfig(
-    "platform: angular\nbridge: material\ncapabilities:\n  - component\n",
-  );
+  const config = loadConfig("platform: angular\nbridge: material\ncapabilities:\n  - component\n");
   const spec = {
     version: "1",
     features: [

@@ -56,13 +56,11 @@ export const componentProvider: Provider = {
   generate(feature: FeatureT): Asset[] {
     const used = new Set<string>();
     collectTypes(feature.tree, used);
-    const symbols = [...used]
-      .sort(byteCompare)
-      .map((t) => {
-        const entry = CATALOG[t];
-        if (!entry) throw new Error(`unknown material component node type "${t}"`);
-        return { symbol: entry.symbol, importPath: entry.importPath };
-      });
+    const symbols = [...used].sort(byteCompare).map((t) => {
+      const entry = CATALOG[t];
+      if (!entry) throw new Error(`unknown material component node type "${t}"`);
+      return { symbol: entry.symbol, importPath: entry.importPath };
+    });
     const className = pascal(feature.id);
     const content = render(TEMPLATE, {
       imports: symbols,
