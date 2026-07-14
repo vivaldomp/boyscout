@@ -41,21 +41,33 @@ schedule(graph: ExecutionGraphT, runNode: (nodeId: string) => Promise<T>, opts: 
 - Returns results **indexed by `ordering` position**, never by completion order. This is the determinism seam: the result array is a pure function of `(graph, runNode)`, independent of *when* nodes finish.
 - Knows nothing about assets, Biome, or workers — `runNode` is fully injected.
 
-### 2. Executors (runtime)
+### 2. Default path — unchanged
 
-- **Default — unchanged.** `buildAssets(opts): Asset[]` stays **synchronous**, the exact current loop. Zero risk to existing callers.
-- **Opt-in — new.** `buildAssetsParallel(opts, { concurrency }): Promise<Asset[]>`. Shares the pipeline core (validate → plan → `featureById` → post-guardrail) with the sync path via extracted helpers; only the middle differs — `schedule()` driving a worker pool, then flatten each node's `Asset[]` in ordering position (identical reassembly to the sync loop).
+`buildAssets(opts): Asset[]` stays **synchronous**, the exact current loop. Zero risk to existing callers. The opt-in parallel path is a separate async entrypoint (§4); nothing on the default path changes.
 
-### 3. Worker job & bridge-by-id resolution (runtime)
+### 3. Format-only worker pool (determinism)
 
-- **Job input:** `{ bridgeId, feature }` — both JSON-serializable (`tree`, `props`, `annotations` are plain objects; `feature` is plain data).
-- **Worker body:** import the bridge by `bridgeId`, run `registry.providerFor(feature.capability).generate(feature)`, `format()` each raw asset with the worker's **own cached Biome/WASM instance**, return `Asset[]` (`{ path, content, durable }` — serializable).
-- **Bridge-by-id registry:** a small `{ [id]: () => import(...) }` map so a worker resolves the correct bridge module. Two bridges exist (`astryx-react`, `material`).
-- **Pool:** persistent, size `min(concurrency, nodeCount)`, reused across all nodes (amortizes per-worker WASM init — the only reason the pool can net-win), terminated when the build ends.
+**Why format-only, not whole-node:** the toolchain has **no build step** — packages export `./src/index.ts` directly and run via vitest transpilation (no `dist`, no `tsx`/`ts-node`). A worker that ran `generate()` would have to import a **bridge** (TypeScript) — requiring a TS loader *and* forcing `runtime` to import concrete bridges, **breaking the D1 agnosticism invariant**. So the split is:
+
+- **`generate()` stays on the main thread** — bridge providers are cheap sync string-building, invoked via the already-injected `Bridge` object. `runtime` never imports a bridge; agnosticism preserved.
+- **`format()` (Biome/WASM — the actual hot path, a plain JS dep) is the parallelized unit.** The worker is **plain `.mjs`** importing `@biomejs/js-api/nodejs` directly — no TS, no loader, runs on Node 20.
+
+Pool lives in **determinism** (which already owns Biome):
+- `packages/determinism/src/format-worker.mjs` — worker entry: receives `{ source, lang }`, formats with its **own cached Biome instance** (hermetic CONFIG inlined), returns the formatted string.
+- `packages/determinism/src/format-pool.ts` — `createFormatPool({ size }): { format(source, lang): Promise<string>; close(): Promise<void> }`. Persistent workers + a job queue, reused across the whole build (amortizes per-worker WASM init — the only reason the pool can net-win), `close()` terminates them.
+- **Job input** `{ source, lang }` and **output** (formatted string) are both plain strings — trivially serializable across the thread boundary.
+- **Drift guard:** the worker inlines the same hermetic Biome CONFIG as `format.ts`. A determinism test asserts the worker's output is byte-identical to `format()` across all langs (ts/tsx/js/json/css) — fails loudly if the two configs ever diverge.
+
+### 4. Parallel executor (runtime)
+
+`buildAssetsParallel(opts, { concurrency }): Promise<Asset[]>` shares the pipeline core with sync `buildAssets` (validate → plan → `featureById` → post-guardrail) via extracted helpers. The middle:
+- Creates a format pool (`size = concurrency`), drives `schedule(graph, runNode, { concurrency: nodes.length })`.
+- `runNode(nodeId)`: `provider.generate(feature)` on the main thread → `await Promise.all(rawAssets.map(a => pool.format(a.content, langOf(a.path))))` → returns that node's `Asset[]`.
+- `schedule()` reassembles node results by `ordering` index; each node's `Asset[]` keeps provider-yield order; `close()` the pool; post-guardrail on the assembled array — identical to the sync path.
 
 ## Determinism guarantee
 
-Output bytes depend only on `(graph, per-node generate/format)`, never on scheduling. Enforced by: (a) `schedule()` indexing results by `ordering` position; (b) each node's `Asset[]` flattened in provider-yield order; (c) post-guardrail and emit run on the fully-assembled, ordered array exactly as today.
+Output bytes depend only on `(graph, per-node generate/format)`, never on scheduling or on which worker formatted which asset (formatting is a pure function of `source, lang`). Enforced by: (a) `schedule()` indexing results by `ordering` position; (b) each node's `Asset[]` in provider-yield order; (c) the worker's hermetic CONFIG matching `format.ts` (drift-guarded); (d) post-guardrail and emit run on the fully-assembled, ordered array exactly as today.
 
 ## Tests / proofs
 
@@ -64,16 +76,18 @@ Output bytes depend only on `(graph, per-node generate/format)`, never on schedu
 | **Reassembly byte-identity** (core) | Inject a `runNode` that resolves in shuffled/reversed order (delays making fast nodes finish last); assert assembled bytes == sequential `buildAssets`. |
 | **Dependency bounds honored** | Synthetic graph `A→B→C` + independent `D`; record start/finish per node; assert no node starts before all its deps finish. |
 | **Cycle rejection** | Graph with a cycle → `schedule()` throws. |
-| **Pool == sequential** | `buildAssetsParallel` output byte-identical to `buildAssets` on existing goldens, **both bridges**. |
+| **Worker == `format()`** (drift guard) | Worker output byte-identical to `format()` across ts/tsx/js/json/css. |
+| **Pool == sequential** | `buildAssetsParallel` output deep-equals `buildAssets` (multi-asset fake bridge). Since formatting is the only parallelized step and is bridge-agnostic, this + the worker drift guard cover every bridge transitively. |
 | **Speedup (honest)** | Benchmark on a large synthetic spec: assert wall-clock win; **document the crossover** where small specs are net-slower due to worker/serialize/WASM overhead. Reported, not hidden. |
 
 ## Files (anticipated)
 
 - `packages/planner/src/index.ts` — add `schedule()`.
 - `packages/planner/test/schedule.test.ts` — reassembly, dependency-bounds, cycle tests.
+- `packages/determinism/src/format-worker.mjs` — plain-JS worker: `{ source, lang }` → formatted string (own cached Biome).
+- `packages/determinism/src/format-pool.ts` — `createFormatPool({ size })` (persistent workers + queue).
+- `packages/determinism/test/format-pool.test.ts` — worker==`format()` drift guard, pool concurrency sanity.
 - `packages/runtime/src/index.ts` — add `buildAssetsParallel`, extract shared pipeline helpers.
-- `packages/runtime/src/worker.ts` (or similar) — worker entry: bridge-by-id → generate → format → `Asset[]`.
-- `packages/runtime/src/bridge-registry.ts` (or inline) — `{ id: () => import(...) }`.
 - `packages/runtime/test/parallel.test.ts` — pool==sequential (both bridges) + speedup benchmark.
 
 ## Non-goals recap
