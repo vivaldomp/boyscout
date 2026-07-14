@@ -17,6 +17,7 @@
     "typescript": "5.9.3"
   },
   "devDependencies": {
+    "@boyscout/bridge-contract-kit": "workspace:*",
     "@angular/common": "18.2.14",
     "@angular/core": "18.2.14",
     "@angular/forms": "18.2.14",

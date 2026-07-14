@@ -104,6 +104,19 @@ importers:
         specifier: ^4.23.1
         version: 4.23.1
 
+  packages/bridge-contract-kit:
+    dependencies:
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+    devDependencies:
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@20.19.9)(vite@8.1.4(@types/node@20.19.9)(esbuild@0.28.1)(tsx@4.23.1)(yaml@2.9.0))
+
   packages/bridges/bridge-astryx-react:
     dependencies:
       '@astryxdesign/core':
@@ -125,6 +138,9 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
     devDependencies:
+      '@boyscout/bridge-contract-kit':
+        specifier: workspace:*
+        version: link:../../bridge-contract-kit
       '@types/react':
         specifier: 19.2.17
         version: 19.2.17
@@ -162,6 +178,9 @@ importers:
       '@angular/router':
         specifier: 18.2.14
         version: 18.2.14(@angular/common@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@18.2.14(@angular/animations@19.2.25(@angular/common@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10)))(@angular/common@18.2.14(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@18.2.14(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2)
+      '@boyscout/bridge-contract-kit':
+        specifier: workspace:*
+        version: link:../../bridge-contract-kit
       rxjs:
         specifier: 7.8.2
         version: 7.8.2
