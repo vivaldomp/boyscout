@@ -68,4 +68,35 @@ describe("componentProvider", () => {
     // braces are escaped so Angular does not treat {{x}} as interpolation
     expect(c).toContain("&#123;&#123;x&#125;&#125;");
   });
+
+  it("rejects unsafe attribute names (template-literal key injection)", () => {
+    const evil: FeatureT = {
+      id: "evil-attr",
+      capability: "component",
+      tree: {
+        type: "Card",
+        props: { "${globalThis.PWNED=1}": "x" },
+      },
+      annotations: {},
+      props: {},
+      approved: true,
+    };
+    expect(() => componentProvider.generate(evil)).toThrow(/unsafe attribute name/);
+  });
+
+  it("still renders normal attribute names (e.g. data-testid) fine", () => {
+    const withAttr: FeatureT = {
+      id: "attr-card",
+      capability: "component",
+      tree: {
+        type: "Card",
+        props: { "data-testid": "user-card" },
+      },
+      annotations: {},
+      props: {},
+      approved: true,
+    };
+    const c = componentProvider.generate(withAttr)[0]?.content ?? "";
+    expect(c).toContain('<mat-card data-testid="user-card">');
+  });
 });

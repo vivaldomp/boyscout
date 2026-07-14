@@ -12,6 +12,8 @@ const TEMPLATE = readFileSync(
   "utf8",
 );
 
+const SAFE_ATTR_KEY = /^[a-zA-Z][a-zA-Z0-9-]*$/;
+
 function selectorOf(type: string): string {
   const entry = CATALOG[type];
   if (!entry) throw new Error(`unknown material component node type "${type}"`);
@@ -22,7 +24,12 @@ function renderAttrs(props: Record<string, unknown>): string {
   const keys = Object.keys(props)
     .filter((k) => k !== "text")
     .sort(byteCompare);
-  return keys.map((k) => `${k}="${escapeAttr(String(props[k]))}"`).join(" ");
+  return keys
+    .map((k) => {
+      if (!SAFE_ATTR_KEY.test(k)) throw new Error(`unsafe attribute name "${k}"`);
+      return `${k}="${escapeAttr(String(props[k]))}"`;
+    })
+    .join(" ");
 }
 
 export function renderNode(node: AstNodeT): string {
