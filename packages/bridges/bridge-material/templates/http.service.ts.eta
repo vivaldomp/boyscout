@@ -1,0 +1,19 @@
+import { Injectable, inject } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { map, type Observable } from "rxjs";
+import { <%= it.transformsName %> } from "<%= it.importSpecifier %>";
+
+export interface <%= it.transformsInterface %> {
+<% it.endpoints.forEach(function (e) { %>  <%= e.name %>(raw: unknown): <%= e.response %>;
+<% }) %>}
+
+const transforms: <%= it.transformsInterface %> = <%= it.transformsName %>;
+
+@Injectable({ providedIn: "root" })
+export class <%= it.serviceClass %> {
+  private readonly http = inject(HttpClient);
+<% it.endpoints.forEach(function (e) { %>
+  <%= e.name %>(): Observable<<%= e.response %>> {
+    return this.http.request<unknown>(<%= e.methodLiteral %>, <%= e.pathLiteral %>).pipe(map((raw) => transforms.<%= e.name %>(raw)));
+  }
+<% }) %>}

@@ -1,0 +1,9 @@
+import { Component } from "@angular/core";
+<% it.imports.forEach(function (im) { %>import { <%= im.symbol %> } from "<%= im.importPath %>";
+<% }) %>@Component({
+  standalone: true,
+  selector: "<%= it.selector %>",
+  imports: [<%= it.importList %>],
+  template: `<%= it.body %>`,
+})
+export class <%= it.className %> {}

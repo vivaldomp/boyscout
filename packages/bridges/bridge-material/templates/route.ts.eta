@@ -1,0 +1,5 @@
+import type { Routes } from "@angular/router";
+
+export const <%= it.constName %>: Routes = [
+<% it.routes.forEach(function (r) { %>  { path: <%= r.pathLiteral %>, loadComponent: () => import(<%= r.importLiteral %>).then((m) => m.<%= r.className %>) },
+<% }) %>];

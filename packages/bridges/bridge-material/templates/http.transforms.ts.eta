@@ -1,0 +1,5 @@
+export const <%= it.transformsName %> = {
+<% it.endpoints.forEach(function (e) { %>  <%= e.name %>(raw: unknown): <%= e.response %> {
+    throw new Error("not implemented: <%= e.name %> transform");
+  },
+<% }) %>};

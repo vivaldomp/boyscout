@@ -1,5 +1,5 @@
 {
-  "name": "@boyscout/bridge-astryx-react",
+  "name": "@boyscout/bridge-contract-kit",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,15 +10,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@astryxdesign/core": "0.1.4",
-    "@boyscout/codegen": "workspace:*",
-    "@boyscout/determinism": "workspace:*",
-    "@boyscout/guardrails": "workspace:*",
     "@boyscout/schemas": "workspace:*",
     "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@boyscout/bridge-contract-kit": "workspace:*",
-    "@types/react": "19.2.17"
+    "vitest": "4.1.10"
   }
 }
