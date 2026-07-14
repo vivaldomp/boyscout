@@ -1,8 +1,20 @@
 import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { bridge } from "@boyscout/bridge-astryx-react";
+import { bridge as astryxBridge } from "@boyscout/bridge-astryx-react";
+import { bridge as materialBridge } from "@boyscout/bridge-material";
 import { GateError, generate, loadConfig } from "@boyscout/runtime";
+import type { Bridge } from "@boyscout/schemas";
 import { authorCommand } from "./author/command.js";
+
+const BRIDGES: Record<string, Bridge> = {
+  "astryx-react": astryxBridge,
+  material: materialBridge,
+};
+
+/** Resolve a bridge by its config id. Unknown id -> undefined. */
+export function selectBridge(id: string): Bridge | undefined {
+  return BRIDGES[id];
+}
 
 function flag(argv: string[], name: string, fallback: string): string {
   const i = argv.indexOf(name);
@@ -24,6 +36,11 @@ export function main(argv: string[]): number {
 
   try {
     const config = loadConfig(readFileSync(configPath, "utf8"));
+    const bridge = selectBridge(config.bridge);
+    if (!bridge) {
+      process.stderr.write(`unknown bridge: ${config.bridge}\n`);
+      return 1;
+    }
     const specInput = JSON.parse(readFileSync(specPath, "utf8"));
     const { emitted, preserved } = generate({
       specInput,

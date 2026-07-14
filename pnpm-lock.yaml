@@ -72,6 +72,9 @@ importers:
       '@boyscout/bridge-astryx-react':
         specifier: workspace:*
         version: link:../../packages/bridges/bridge-astryx-react
+      '@boyscout/bridge-material':
+        specifier: workspace:*
+        version: link:../../packages/bridges/bridge-material
       '@boyscout/determinism':
         specifier: workspace:*
         version: link:../../packages/determinism

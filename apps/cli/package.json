@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@boyscout/bridge-astryx-react": "workspace:*",
+    "@boyscout/bridge-material": "workspace:*",
     "@boyscout/determinism": "workspace:*",
     "@boyscout/dialect": "workspace:*",
     "@boyscout/guardrails": "workspace:*",
