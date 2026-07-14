@@ -78,7 +78,10 @@ function prepare(opts: BuildOpts): {
 
 /** Shared post-barrier: scaffold assets only (durable human bodies are lint-level, D2d). */
 function postBarrier(assets: Asset[], bridge: Bridge): Asset[] {
-  const gate = checkAssets(assets.filter((a) => !a.durable), bridge.postRules);
+  const gate = checkAssets(
+    assets.filter((a) => !a.durable),
+    bridge.postRules,
+  );
   if (!gate.ok) throw new GateError(gate.violations);
   return assets;
 }

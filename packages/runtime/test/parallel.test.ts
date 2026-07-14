@@ -15,7 +15,10 @@ const fakeBridge: Bridge = {
             capability: "component",
             // two assets per feature — exercises intra-node asset ordering
             generate: (f: FeatureT): Asset[] => [
-              { path: `${f.id}.tsx`, content: `export const ${f.id}=()=><Card><Text>hi</Text></Card>` },
+              {
+                path: `${f.id}.tsx`,
+                content: `export const ${f.id}=()=><Card><Text>hi</Text></Card>`,
+              },
               { path: `${f.id}.meta.json`, content: `{"id":"${f.id}"}` },
             ],
           }
@@ -53,9 +56,12 @@ describe("buildAssetsParallel", () => {
     const opts = { specInput: spec(["z", "a", "m"]), config, bridge: fakeBridge };
     const par = await buildAssetsParallel(opts, { concurrency: 4 });
     expect(par.map((a) => a.path)).toEqual([
-      "a.tsx", "a.meta.json",
-      "m.tsx", "m.meta.json",
-      "z.tsx", "z.meta.json",
+      "a.tsx",
+      "a.meta.json",
+      "m.tsx",
+      "m.meta.json",
+      "z.tsx",
+      "z.meta.json",
     ]);
   });
 });

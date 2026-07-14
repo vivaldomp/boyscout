@@ -70,20 +70,17 @@ export async function schedule<T>(
       while (ready.length > 0 && inFlight < opts.concurrency) {
         const id = ready.shift() as string;
         inFlight++;
-        runNode(id).then(
-          (value) => {
-            results[orderIndex.get(id) as number] = value;
-            inFlight--;
-            done++;
-            for (const dep of dependents.get(id) ?? []) {
-              const n = (indeg.get(dep) ?? 0) - 1;
-              indeg.set(dep, n);
-              if (n === 0) ready.push(dep); // pushed in edge-completion order; safe — output is reassembled by ordering
-            }
-            pump();
-          },
-          fail,
-        );
+        runNode(id).then((value) => {
+          results[orderIndex.get(id) as number] = value;
+          inFlight--;
+          done++;
+          for (const dep of dependents.get(id) ?? []) {
+            const n = (indeg.get(dep) ?? 0) - 1;
+            indeg.set(dep, n);
+            if (n === 0) ready.push(dep); // pushed in edge-completion order; safe — output is reassembled by ordering
+          }
+          pump();
+        }, fail);
       }
     };
 

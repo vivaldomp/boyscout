@@ -34,7 +34,13 @@ describe("schedule", () => {
         }, 10);
       });
     await schedule(
-      graph(["a", "b", "c", "d"], [["a", "b"], ["b", "c"]]),
+      graph(
+        ["a", "b", "c", "d"],
+        [
+          ["a", "b"],
+          ["b", "c"],
+        ],
+      ),
       run,
       { concurrency: 8 },
     );
@@ -61,15 +67,25 @@ describe("schedule", () => {
 
   it("rejects a cycle", async () => {
     await expect(
-      schedule(graph(["a", "b"], [["a", "b"], ["b", "a"]]), async (id) => id, {
-        concurrency: 4,
-      }),
+      schedule(
+        graph(
+          ["a", "b"],
+          [
+            ["a", "b"],
+            ["b", "a"],
+          ],
+        ),
+        async (id) => id,
+        {
+          concurrency: 4,
+        },
+      ),
     ).rejects.toThrow(/cycle/i);
   });
 
   it("rejects a non-positive concurrency instead of hanging", async () => {
-    await expect(
-      schedule(graph(["a", "b"]), async (id) => id, { concurrency: 0 }),
-    ).rejects.toThrow(/concurrency/i);
+    await expect(schedule(graph(["a", "b"]), async (id) => id, { concurrency: 0 })).rejects.toThrow(
+      /concurrency/i,
+    );
   });
 });

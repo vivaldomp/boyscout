@@ -24,9 +24,7 @@ describe("format pool", () => {
   it("handles many concurrent jobs on a small pool", async () => {
     const pool = createFormatPool({ size: 2 });
     try {
-      const jobs = Array.from({ length: 20 }, (_, i) =>
-        pool.format(`const v${i}=${i}`, "ts"),
-      );
+      const jobs = Array.from({ length: 20 }, (_, i) => pool.format(`const v${i}=${i}`, "ts"));
       const out = await Promise.all(jobs);
       expect(out[7]).toBe(format("const v7=7", "ts"));
       expect(out).toHaveLength(20);
