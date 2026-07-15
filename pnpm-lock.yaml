@@ -297,6 +297,22 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
+  packages/skill-template:
+    dependencies:
+      '@boyscout/determinism':
+        specifier: workspace:*
+        version: link:../determinism
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+    devDependencies:
+      '@boyscout/bridge-astryx-react':
+        specifier: workspace:*
+        version: link:../bridges/bridge-astryx-react
+      '@boyscout/bridge-material':
+        specifier: workspace:*
+        version: link:../bridges/bridge-material
+
   packages/spec:
     dependencies:
       '@boyscout/guardrails':
