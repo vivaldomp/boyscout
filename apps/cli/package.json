@@ -22,6 +22,7 @@
     "@boyscout/questionnaire": "workspace:*",
     "@boyscout/runtime": "workspace:*",
     "@boyscout/schemas": "workspace:*",
+    "@boyscout/skill-template": "workspace:*",
     "@boyscout/spec": "workspace:*",
     "@hono/node-server": "^2.0.8",
     "hono": "^4.12.30"

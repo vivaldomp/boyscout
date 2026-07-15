@@ -96,6 +96,9 @@ importers:
       '@boyscout/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
+      '@boyscout/skill-template':
+        specifier: workspace:*
+        version: link:../../packages/skill-template
       '@boyscout/spec':
         specifier: workspace:*
         version: link:../../packages/spec

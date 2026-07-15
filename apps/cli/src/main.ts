@@ -8,6 +8,7 @@ import { GateError, generate, loadConfig } from "@boyscout/runtime";
 import { Specification } from "@boyscout/schemas";
 import type { Bridge } from "@boyscout/schemas";
 import { authorCommand } from "./author/command.js";
+import { initCommand } from "./init.js";
 
 // The published CLI bundles @boyscout/runtime, so that package is not resolvable at runtime.
 // `../package.json` resolves from both src/main.ts (dev) and dist/bin.js (published); in a
@@ -33,10 +34,11 @@ function flag(argv: string[], name: string, fallback: string): string {
 /** `boyscout generate [--spec ./boyscout-spec.json] [--config ./boyscout.config.yaml]`. Returns an exit code. */
 export function main(argv: string[]): number {
   const command = argv[0];
+  if (command === "init") return initCommand(argv.slice(1));
   if (command === "author") return authorCommand(argv.slice(1));
   if (command !== "generate") {
     process.stderr.write(
-      `unknown command: ${command ?? "(none)"}\nusage: boyscout generate | boyscout author\n`,
+      `unknown command: ${command ?? "(none)"}\nusage: boyscout init | boyscout generate | boyscout author\n`,
     );
     return 1;
   }
