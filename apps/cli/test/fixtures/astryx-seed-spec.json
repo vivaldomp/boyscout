@@ -1,0 +1,27 @@
+{
+  "features": [
+    {
+      "annotations": {},
+      "approved": true,
+      "capability": "component",
+      "id": "user-card",
+      "props": {},
+      "tree": {
+        "children": [
+          {
+            "children": [
+              { "props": { "level": 3, "text": "Profile" }, "type": "Heading" },
+              { "props": { "text": "Member since 2026", "type": "body" }, "type": "Text" },
+              { "props": { "text": "Edit", "variant": "primary" }, "type": "Button" }
+            ],
+            "props": { "gap": 2 },
+            "type": "VStack"
+          }
+        ],
+        "type": "Card"
+      }
+    }
+  ],
+  "metadata": { "bridge": "astryx-react", "checksum": "", "platform": "react" },
+  "version": "1"
+}
