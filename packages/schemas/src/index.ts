@@ -152,10 +152,25 @@ export interface BridgeRegistry {
   providerFor(capability: string): Provider | undefined;
 }
 
+/**
+ * A Bridge's knowledge fragment (FIRST-SPEC §3.1). Prose per section; consumed
+ * only by @boyscout/skill-template to compose an agentskills.io SKILL.md.
+ * The Runtime never reads this.
+ */
+export interface BridgeSkill {
+  readonly conventions: string;
+  readonly imports: string;
+  readonly tokens: string;
+  readonly architecture: string;
+  readonly naming: string;
+}
+
 /** A complete binding of a Platform to the Runtime. The Runtime consumes this by interface — never imports it. */
 export interface Bridge {
   readonly id: string;
   readonly platform: string;
   readonly registry: BridgeRegistry;
   readonly postRules: readonly AssetRule[];
+  /** Optional Bridge Skill fragment (SP8a). Consumed only by skill-template. */
+  readonly skill?: BridgeSkill;
 }
