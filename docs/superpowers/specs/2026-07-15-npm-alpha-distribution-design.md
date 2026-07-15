@@ -82,7 +82,9 @@ Published `apps/cli/package.json` changes: drop `private`; `version: 0.1.0-alpha
 **`main.ts` runtime version.** It currently reads
 `createRequire(import.meta.url)("@boyscout/runtime/package.json")`. That specifier does not resolve in the published package — `@boyscout/runtime` is bundled, not installed. It becomes a read of the CLI's own `../package.json`, which resolves correctly from both `src/main.ts` (dev) and `dist/bin.js` (published).
 
-The lock field keeps the name `runtimeVersion`: in a bundled distribution the CLI version **is** the runtime version. Both values are `0.0.0` today, so the change is inert until the version bump — at which point lock content shifts `0.0.0` → `0.1.0-alpha.0`. `apps/cli/test/lockfile.test.ts` and `packages/lockfile/test/closure.test.ts` reference `runtimeVersion` and must be checked; goldens embedding a lock must be regenerated via `pnpm golden:update`.
+The lock field keeps the name `runtimeVersion`: in a bundled distribution the CLI version **is** the runtime version. Both values are `0.0.0` today, so the change is inert until the version bump — at which point lock content shifts `0.0.0` → `0.1.0-alpha.0`.
+
+**Verified: this breaks no test and no golden.** `packages/lockfile/test/closure.test.ts` passes `runtimeVersion` as a literal (pure unit test, decoupled from any manifest); `apps/cli/test/lockfile.test.ts` asserts behaviour only (lock exists, `--check` passes/fails) and never exact version content; no golden embeds a lock (`grep -rln runtimeVersion apps/cli/test/goldens` → empty).
 
 **`author/command.ts` UI path.** `--ui-dist` defaults to `../../../boyscout-ui/dist` (monorepo-relative, via `import.meta.url`). New default: `./ui` beside the entry if it exists, else the current path — one `existsSync`, so `author` works both from source and from npm.
 
@@ -187,5 +189,5 @@ A PR arriving as bare commits with no spec and no plan cannot be reviewed agains
 |---|---|
 | npm org `boyscout` unavailable | Fall back to `boyscout-cli` (confirmed free); rename is a package.json field, not a code change |
 | `npm publish` rejects `workspace:*` in `devDependencies` | `npm pack --dry-run` in both CI and release; if it fails, strip devDeps from the published manifest at build time |
-| Version bump breaks lock goldens | Anticipated above — regenerate with `pnpm golden:update`, verify the diff is version-only |
+| ~~Version bump breaks lock goldens~~ | **Void — verified.** No golden embeds a lock; both lockfile tests are version-agnostic. See "Two code changes the bundle forces" |
 | esbuild bundle breaks a dynamic require inside a `@boyscout/*` package | Smoke-test the built binary against the same fixtures the E2E uses, from a packed tarball |
