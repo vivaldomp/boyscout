@@ -9,9 +9,11 @@ import { Specification } from "@boyscout/schemas";
 import type { Bridge } from "@boyscout/schemas";
 import { authorCommand } from "./author/command.js";
 
-const runtimeVersion = (
-  createRequire(import.meta.url)("@boyscout/runtime/package.json") as { version: string }
-).version;
+// The published CLI bundles @boyscout/runtime, so that package is not resolvable at runtime.
+// `../package.json` resolves from both src/main.ts (dev) and dist/bin.js (published); in a
+// bundled distribution the CLI version *is* the runtime version.
+const runtimeVersion = (createRequire(import.meta.url)("../package.json") as { version: string })
+  .version;
 
 const BRIDGES: Record<string, Bridge> = {
   "astryx-react": astryxBridge,
