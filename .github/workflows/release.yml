@@ -46,6 +46,19 @@ jobs:
       - run: pnpm --filter boyscout-ui build
       - run: pnpm --filter @boyscout/cli build
 
+      # Smoke-test the bundled binary before irreversible publish. The tsx-based gates above
+      # (typecheck/test/format/lint) run on source and cannot see bundle-layer defects like
+      # import.meta.url collapse. Only the built artifact will catch those.
+      - name: Shebang present exactly once
+        run: test "$(grep -c '^#!/usr/bin/env node' apps/cli/dist/bin.js)" = "1"
+      - name: Bundled CLI scaffolds and generates
+        run: |
+          mkdir -p /tmp/bs-smoke
+          node apps/cli/dist/bin.js init --root /tmp/bs-smoke
+          cd /tmp/bs-smoke
+          node "$GITHUB_WORKSPACE/apps/cli/dist/bin.js" generate
+          node "$GITHUB_WORKSPACE/apps/cli/dist/bin.js" generate --check
+
       - name: Verify the tarball before publishing
         working-directory: apps/cli
         run: npm pack --dry-run

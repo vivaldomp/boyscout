@@ -72,7 +72,7 @@ Then run `boyscout` instead of `npx @boyscout/cli@alpha`.
 
 ### Your first design
 
-`init` seeds a project with a small component spec. Generate it:
+`init` seeds a project with a small component and a service. Generate it:
 
 ```bash
 npx @boyscout/cli@alpha generate
