@@ -51,6 +51,14 @@ export function diffLock(expected: LockClosure, actual: LockClosure): string[] {
   cmp("bridge.id", expected.bridge.id, actual.bridge.id);
   cmp("bridge.version", expected.bridge.version, actual.bridge.version);
   cmp("checksum", expected.checksum, actual.checksum);
-  cmp("capabilities", expected.capabilities.join(","), actual.capabilities.join(","));
+  // Element-wise, not join(",") — a joined compare false-negatives on e.g. ["a,b"] vs ["a","b"].
+  const capsEqual =
+    expected.capabilities.length === actual.capabilities.length &&
+    expected.capabilities.every((c, i) => c === actual.capabilities[i]);
+  if (!capsEqual) {
+    lines.push(
+      `capabilities: [${expected.capabilities.join(", ")}] -> [${actual.capabilities.join(", ")}]`,
+    );
+  }
   return lines;
 }

@@ -74,4 +74,14 @@ describe("diffLock", () => {
     const b = buildLockClosure({ spec, bridge, runtimeVersion: "0.0.1" });
     expect(diffLock(a, b)).toEqual(["runtimeVersion: 0.0.0 -> 0.0.1"]);
   });
+
+  it("detects capability drift a comma-join would mask (['a,b'] vs ['a','b'])", () => {
+    const base = buildLockClosure({ spec, bridge, runtimeVersion: "0.0.0" });
+    const drift = diffLock(
+      { ...base, capabilities: ["a,b"] },
+      { ...base, capabilities: ["a", "b"] },
+    );
+    expect(drift.length).toBeGreaterThan(0);
+    expect(drift[0]).toContain("capabilities");
+  });
 });
