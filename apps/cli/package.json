@@ -1,18 +1,55 @@
 {
   "name": "@boyscout/cli",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0-alpha.0",
+  "description": "Governed deterministic runtime for software generation — AI decides what to build, the Runtime decides how.",
+  "license": "MIT",
   "type": "module",
-  "bin": {
-    "boyscout": "./src/bin.ts"
+  "homepage": "https://github.com/vivaldomp/boyscout#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vivaldomp/boyscout.git",
+    "directory": "apps/cli"
   },
-  "exports": {
-    ".": "./src/main.ts"
+  "bugs": {
+    "url": "https://github.com/vivaldomp/boyscout/issues"
+  },
+  "keywords": [
+    "codegen",
+    "deterministic",
+    "ai",
+    "claude",
+    "design-system",
+    "governance"
+  ],
+  "bin": {
+    "boyscout": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
+    "build": "node build.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@astryxdesign/core": "0.1.4",
+    "@biomejs/js-api": "6.0.0",
+    "@biomejs/wasm-nodejs": "2.5.3",
+    "@hono/node-server": "2.0.8",
+    "eta": "4.6.0",
+    "hono": "4.12.30",
+    "typescript": "5.9.3",
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
     "@boyscout/bridge-astryx-react": "workspace:*",
     "@boyscout/bridge-material": "workspace:*",
     "@boyscout/determinism": "workspace:*",
@@ -22,11 +59,9 @@
     "@boyscout/questionnaire": "workspace:*",
     "@boyscout/runtime": "workspace:*",
     "@boyscout/schemas": "workspace:*",
+    "@boyscout/skill-template": "workspace:*",
     "@boyscout/spec": "workspace:*",
-    "@hono/node-server": "^2.0.8",
-    "hono": "^4.12.30"
-  },
-  "devDependencies": {
+    "esbuild": "0.28.1",
     "tsx": "^4.23.1"
   }
 }

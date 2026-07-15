@@ -7,3 +7,6 @@ dist/
 test-results/
 playwright-report/
 .playwright-mcp/
+apps/cli/README.md
+apps/cli/LICENSE
+apps/cli/templates/

@@ -41,3 +41,31 @@ jobs:
       - run: pnpm --filter boyscout-ui build
       - run: pnpm --filter boyscout-ui exec playwright install --with-deps chromium
       - run: pnpm --filter boyscout-ui e2e
+
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter boyscout-ui build
+      - run: pnpm --filter @boyscout/cli build
+      - name: Shebang present exactly once
+        run: |
+          test "$(grep -c '^#!/usr/bin/env node' apps/cli/dist/bin.js)" = "1"
+      - name: Bundled CLI scaffolds and generates
+        run: |
+          mkdir -p /tmp/bs-smoke
+          node apps/cli/dist/bin.js init --root /tmp/bs-smoke
+          cd /tmp/bs-smoke
+          node "$GITHUB_WORKSPACE/apps/cli/dist/bin.js" generate
+          node "$GITHUB_WORKSPACE/apps/cli/dist/bin.js" generate --check
+      - name: Tarball is well-formed
+        working-directory: apps/cli
+        run: npm pack --dry-run

@@ -31,15 +31,24 @@ export function resolveHost(argv: string[]): string {
   return flag(argv, "--host", "127.0.0.1");
 }
 
+/**
+ * Published layout: `dist/ui` sits beside `dist/bin.js`. Dev layout: the monorepo's Vite build.
+ * Prefer the bundled copy when present so `author` works both from source and from npm.
+ */
+export function defaultUiDist(): string {
+  const bundled = fileURLToPath(new URL("./ui", import.meta.url));
+  return existsSync(bundled)
+    ? bundled
+    : fileURLToPath(new URL("../../../boyscout-ui/dist", import.meta.url));
+}
+
 /** `boyscout author --openui <f> [--spec <f>] [--host 127.0.0.1] [--port 4517] [--ui-dist <dir>]` */
 export function authorCommand(argv: string[]): number {
   const openuiPath = resolve(flag(argv, "--openui", "./boyscout.openui"));
   const specPath = resolve(flag(argv, "--spec", "./boyscout-spec.json"));
   const host = resolveHost(argv);
   const port = Number(flag(argv, "--port", "4517"));
-  const uiDist = resolve(
-    flag(argv, "--ui-dist", fileURLToPath(new URL("../../../boyscout-ui/dist", import.meta.url))),
-  );
+  const uiDist = resolve(flag(argv, "--ui-dist", defaultUiDist()));
   // BOYSCOUT_AUTH_TOKEN overrides the CSPRNG token for deterministic E2E only; unset in normal use.
   const token = process.env.BOYSCOUT_AUTH_TOKEN ?? defaultAuthToken();
   const selfOrigin = `http://${host}:${port}`;

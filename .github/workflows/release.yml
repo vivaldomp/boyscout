@@ -1,0 +1,73 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC -> npm trusted publishing
+      contents: write # gh release create
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      # Node 20 ships npm 10; trusted publishing (OIDC) needs npm >= 11.5.1. Without this,
+      # npm ignores OIDC, looks for a token that does not exist, and the publish fails.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Verify tag matches the package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./apps/cli/package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "tag $TAG != apps/cli version $PKG" >&2
+            exit 1
+          fi
+          echo "releasing $PKG"
+
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm format:check
+      - run: pnpm lint
+
+      - run: pnpm --filter boyscout-ui build
+      - run: pnpm --filter @boyscout/cli build
+
+      # Smoke-test the bundled binary before irreversible publish. The tsx-based gates above
+      # (typecheck/test/format/lint) run on source and cannot see bundle-layer defects like
+      # import.meta.url collapse. Only the built artifact will catch those.
+      - name: Shebang present exactly once
+        run: test "$(grep -c '^#!/usr/bin/env node' apps/cli/dist/bin.js)" = "1"
+      - name: Bundled CLI scaffolds and generates
+        run: |
+          mkdir -p /tmp/bs-smoke
+          node apps/cli/dist/bin.js init --root /tmp/bs-smoke
+          cd /tmp/bs-smoke
+          node "$GITHUB_WORKSPACE/apps/cli/dist/bin.js" generate
+          node "$GITHUB_WORKSPACE/apps/cli/dist/bin.js" generate --check
+
+      - name: Verify the tarball before publishing
+        working-directory: apps/cli
+        run: npm pack --dry-run
+
+      - name: Publish to npm
+        working-directory: apps/cli
+        run: npm publish --access public --tag alpha
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes --prerelease
