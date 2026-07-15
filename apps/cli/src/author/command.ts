@@ -21,17 +21,27 @@ const MIME: Record<string, string> = {
   ".svg": "image/svg+xml",
 };
 
+/** §21: CSPRNG session token (24 bytes -> 48 hex). Never uses the generation "no OS randomness" path. */
+export function defaultAuthToken(): string {
+  return randomBytes(24).toString("hex");
+}
+
+/** §21: default bind is loopback-only; 0.0.0.0 (or any other host) requires an explicit --host override. */
+export function resolveHost(argv: string[]): string {
+  return flag(argv, "--host", "127.0.0.1");
+}
+
 /** `boyscout author --openui <f> [--spec <f>] [--host 127.0.0.1] [--port 4517] [--ui-dist <dir>]` */
 export function authorCommand(argv: string[]): number {
   const openuiPath = resolve(flag(argv, "--openui", "./boyscout.openui"));
   const specPath = resolve(flag(argv, "--spec", "./boyscout-spec.json"));
-  const host = flag(argv, "--host", "127.0.0.1");
+  const host = resolveHost(argv);
   const port = Number(flag(argv, "--port", "4517"));
   const uiDist = resolve(
     flag(argv, "--ui-dist", fileURLToPath(new URL("../../../boyscout-ui/dist", import.meta.url))),
   );
   // BOYSCOUT_AUTH_TOKEN overrides the CSPRNG token for deterministic E2E only; unset in normal use.
-  const token = process.env.BOYSCOUT_AUTH_TOKEN ?? randomBytes(24).toString("hex");
+  const token = process.env.BOYSCOUT_AUTH_TOKEN ?? defaultAuthToken();
   const selfOrigin = `http://${host}:${port}`;
   const initialOpenui = existsSync(openuiPath) ? readFileSync(openuiPath, "utf8") : "";
 
