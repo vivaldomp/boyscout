@@ -16,6 +16,19 @@ const SECTIONS: ReadonlyArray<readonly [keyof BridgeSkill, string]> = [
   ["naming", "Naming"],
 ];
 
+/** Minimal YAML double-quoted scalar — safe for frontmatter values. */
+function yamlString(s: string): string {
+  return `"${s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/[\r\n]/g, "\\n")}"`;
+}
+
+/** Bridge ids are constrained identifiers; strip anything that could break out of a heading. */
+function safeHeadingId(id: string): string {
+  return id.replace(/[\r\n]/g, "").replace(/#/g, "");
+}
+
 /**
  * Compose selected bridges' typed knowledge fragments into an agentskills.io
  * SKILL.md string. Bridges are sorted by id; sections render in fixed order;
@@ -29,13 +42,15 @@ const SECTIONS: ReadonlyArray<readonly [keyof BridgeSkill, string]> = [
  */
 export function composeSkill(bridges: readonly Bridge[], meta: SkillMeta): string {
   const ordered = sortByBytes(bridges, (b) => b.id);
-  const blocks: string[] = [`---\nname: ${meta.name}\ndescription: ${meta.description}\n---`];
+  const blocks: string[] = [
+    `---\nname: ${yamlString(meta.name)}\ndescription: ${yamlString(meta.description)}\n---`,
+  ];
 
   for (const [field, heading] of SECTIONS) {
     const subs: string[] = [];
     for (const b of ordered) {
       const text = b.skill?.[field]?.trim();
-      if (text) subs.push(`### ${b.id}\n${text}`);
+      if (text) subs.push(`### ${safeHeadingId(b.id)}\n${text}`);
     }
     if (subs.length > 0) blocks.push(`## ${heading}\n${subs.join("\n\n")}`);
   }

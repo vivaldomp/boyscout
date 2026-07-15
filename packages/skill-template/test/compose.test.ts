@@ -35,7 +35,9 @@ describe("composeSkill", () => {
       name: "boyscout",
       description: "governed generation",
     });
-    expect(md.startsWith("---\nname: boyscout\ndescription: governed generation\n---")).toBe(true);
+    expect(md.startsWith('---\nname: "boyscout"\ndescription: "governed generation"\n---')).toBe(
+      true,
+    );
   });
 
   it("renders sections in fixed order", () => {
