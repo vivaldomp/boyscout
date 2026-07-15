@@ -45,20 +45,20 @@ Run the CLI straight from TypeScript source:
 
 ```bash
 # scaffold a project in a scratch directory
-pnpm --filter @boyscout/cli exec tsx src/bin.ts init --root /tmp/demo
+pnpm --filter @boyscoutdev/cli exec tsx src/bin.ts init --root /tmp/demo
 
 # generate
-pnpm --filter @boyscout/cli exec tsx src/bin.ts generate --spec /tmp/demo/boyscout-spec.json --config /tmp/demo/boyscout.config.yaml
+pnpm --filter @boyscoutdev/cli exec tsx src/bin.ts generate --spec /tmp/demo/boyscout-spec.json --config /tmp/demo/boyscout.config.yaml
 
 # verify the lock has not drifted
-pnpm --filter @boyscout/cli exec tsx src/bin.ts generate --spec /tmp/demo/boyscout-spec.json --config /tmp/demo/boyscout.config.yaml --check
+pnpm --filter @boyscoutdev/cli exec tsx src/bin.ts generate --spec /tmp/demo/boyscout-spec.json --config /tmp/demo/boyscout.config.yaml --check
 ```
 
 The browser authoring loop needs the UI bundle built first:
 
 ```bash
 pnpm --filter boyscout-ui build
-pnpm --filter @boyscout/cli exec tsx src/bin.ts author --openui /tmp/demo/boyscout.openui
+pnpm --filter @boyscoutdev/cli exec tsx src/bin.ts author --openui /tmp/demo/boyscout.openui
 ```
 
 `author` binds loopback-only (`127.0.0.1`) and mints a CSPRNG session token per run — see §21 of `docs/FIRST-SPEC.md` and `docs/security-checklist.md`. Overriding `--host` is an explicit, deliberate act.
@@ -67,7 +67,7 @@ To exercise the published bundle rather than the source:
 
 ```bash
 pnpm --filter boyscout-ui build
-pnpm --filter @boyscout/cli build
+pnpm --filter @boyscoutdev/cli build
 node apps/cli/dist/bin.js init --root /tmp/demo2
 ```
 
@@ -116,7 +116,7 @@ All four gates must be green on all three operating systems before merge.
 
 ## Releasing
 
-Maintainers only. Releases publish `@boyscout/cli` from a pushed tag via `.github/workflows/release.yml`, authenticated with npm **trusted publishing** (OIDC) — there is no `NPM_TOKEN` secret in this repository.
+Maintainers only. Releases publish `@boyscoutdev/cli` from a pushed tag via `.github/workflows/release.yml`, authenticated with npm **trusted publishing** (OIDC) — there is no `NPM_TOKEN` secret in this repository.
 
 ```bash
 # bump apps/cli/package.json version first, and commit it
@@ -126,16 +126,18 @@ git push origin v0.1.0-alpha.1
 
 The workflow verifies the tag matches `apps/cli/package.json`, runs the full gate, builds, packs, publishes under the `alpha` dist-tag, and cuts a GitHub Release.
 
-**One-time bootstrap** (trusted publishing links an *existing* package to a repo, so it cannot be configured before the package exists):
+**One-time bootstrap** (trusted publishing links an *existing* package to a repo, so it cannot be configured before the package exists — npm has no pre-registration flow):
 
-1. Create the npm org `boyscout`.
-2. Publish once, manually and locally:
+1. Create the npm org `boyscoutdev`. The org name must match the package scope exactly. The free tier covers unlimited public packages.
+2. Publish once, manually and locally. Requires `npm login`; add `--otp=<code>` if 2FA is enabled. Any npm version works here — the 11.5.1 floor applies only to the OIDC path in CI:
    ```bash
    pnpm --filter boyscout-ui build
-   pnpm --filter @boyscout/cli build
+   pnpm --filter @boyscoutdev/cli build
    cd apps/cli && npm publish --access public --tag alpha
    ```
-3. On npmjs.com, open `@boyscout/cli` → Settings → Trusted Publisher, and link repository `vivaldomp/boyscout` with workflow `release.yml`.
-4. Every release after that is a tag push.
+3. On npmjs.com, open `@boyscoutdev/cli` → Settings → Trusted Publisher, and link repository `vivaldomp/boyscout` with workflow `release.yml` (leave the environment field blank).
+4. Bump the version before the first tagged release — see below. Every release after that is a tag push.
+
+**The bootstrap claims its version.** Step 2 publishes `0.1.0-alpha.0`, and npm forbids republishing a version that already exists. Tagging `v0.1.0-alpha.0` afterwards would satisfy the tag guard, run the entire gate, and only then fail at `npm publish` with a 403. So the first *automated* release must bump to `0.1.0-alpha.1` or later.
 
 The `latest` dist-tag stays unclaimed until 1.0 — alphas publish under `alpha` only, so nobody installs one by accident.

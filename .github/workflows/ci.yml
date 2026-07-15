@@ -55,7 +55,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter boyscout-ui build
-      - run: pnpm --filter @boyscout/cli build
+      - run: pnpm --filter @boyscoutdev/cli build
       - name: Shebang present exactly once
         run: |
           test "$(grep -c '^#!/usr/bin/env node' apps/cli/dist/bin.js)" = "1"
