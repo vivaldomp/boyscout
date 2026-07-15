@@ -40,7 +40,7 @@ BoyScout splits the problem in two. **AI decides what to build; the Runtime deci
 BoyScout is built to be driven by a coding agent. `init` writes a `SKILL.md` that teaches **Claude Code** your bridge's conventions, so the agent proposes specs that fit your standards:
 
 ```bash
-npx @boyscout/cli@alpha init
+npx @boyscoutdev/cli@alpha init
 ```
 
 ```
@@ -54,19 +54,19 @@ created .claude/skills/boyscout/SKILL.md
 
 ```bash
 # npm
-npm install -g @boyscout/cli@alpha
+npm install -g @boyscoutdev/cli@alpha
 
 # pnpm
-pnpm add -g @boyscout/cli@alpha
+pnpm add -g @boyscoutdev/cli@alpha
 
 # yarn
-yarn global add @boyscout/cli@alpha
+yarn global add @boyscoutdev/cli@alpha
 
 # bun
-bun add -g @boyscout/cli@alpha
+bun add -g @boyscoutdev/cli@alpha
 ```
 
-Then run `boyscout` instead of `npx @boyscout/cli@alpha`.
+Then run `boyscout` instead of `npx @boyscoutdev/cli@alpha`.
 
 </details>
 
@@ -75,7 +75,7 @@ Then run `boyscout` instead of `npx @boyscout/cli@alpha`.
 `init` seeds a project with a small component and a service. Generate it:
 
 ```bash
-npx @boyscout/cli@alpha generate
+npx @boyscoutdev/cli@alpha generate
 ```
 
 ```
@@ -96,7 +96,7 @@ Now ask Claude Code for something of your own — *"add a signup form with email
 Verify the guarantee — regenerate and confirm nothing drifted:
 
 ```bash
-npx @boyscout/cli@alpha generate --check
+npx @boyscoutdev/cli@alpha generate --check
 ```
 
 > Same spec + same lock = same bytes. On any machine, on any OS.
