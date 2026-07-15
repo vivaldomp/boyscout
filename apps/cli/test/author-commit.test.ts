@@ -77,4 +77,24 @@ describe("author daemon: commit gate", () => {
     expect(body.ok).toBe(false);
     expect(body.violations.some((v: string) => v.includes("no features"))).toBe(true);
   });
+
+  it("§21 refuses to write outside the project root (path traversal)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "bs-"));
+    const { app } = createAuthApp({
+      registry,
+      token: "t",
+      selfOrigin: "http://127.0.0.1:4517",
+      initialOpenui: OPENUI,
+      specPath: join(root, "..", "evil-spec.json"), // escapes projectRoot
+      openuiPath: join(root, "boyscout.openui"),
+      projectRoot: root,
+    });
+    await app.request("/api/approve", {
+      method: "POST",
+      headers: auth,
+      body: JSON.stringify({ featureId: "card", approved: true }),
+    });
+    const res = await app.request("/api/commit", { method: "POST", headers: auth });
+    expect(res.status).not.toBe(200);
+  });
 });

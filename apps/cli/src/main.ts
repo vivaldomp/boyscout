@@ -1,10 +1,17 @@
-import { readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { bridge as astryxBridge } from "@boyscout/bridge-astryx-react";
 import { bridge as materialBridge } from "@boyscout/bridge-material";
+import { buildLockClosure, diffLock, parseLock, serializeLock } from "@boyscout/lockfile";
 import { GateError, generate, loadConfig } from "@boyscout/runtime";
+import { Specification } from "@boyscout/schemas";
 import type { Bridge } from "@boyscout/schemas";
 import { authorCommand } from "./author/command.js";
+
+const runtimeVersion = (
+  createRequire(import.meta.url)("@boyscout/runtime/package.json") as { version: string }
+).version;
 
 const BRIDGES: Record<string, Bridge> = {
   "astryx-react": astryxBridge,
@@ -33,6 +40,7 @@ export function main(argv: string[]): number {
   }
   const specPath = flag(argv, "--spec", "./boyscout-spec.json");
   const configPath = flag(argv, "--config", "./boyscout.config.yaml");
+  const check = argv.includes("--check");
 
   try {
     const config = loadConfig(readFileSync(configPath, "utf8"));
@@ -50,6 +58,19 @@ export function main(argv: string[]): number {
     });
     for (const path of emitted) process.stdout.write(`${path}\n`);
     for (const path of preserved) process.stdout.write(`preserved: ${path}\n`);
+
+    const spec = Specification.parse(specInput);
+    const closure = buildLockClosure({ spec, bridge, runtimeVersion });
+    const lockPath = join(dirname(specPath), "boyscout.lock");
+    if (check) {
+      const drift = diffLock(parseLock(readFileSync(lockPath, "utf8")), closure);
+      if (drift.length > 0) {
+        process.stderr.write(`boyscout.lock drift:\n${drift.map((d) => `  - ${d}`).join("\n")}\n`);
+        return 1;
+      }
+    } else {
+      writeFileSync(lockPath, serializeLock(closure));
+    }
     return 0;
   } catch (err) {
     if (err instanceof GateError) {

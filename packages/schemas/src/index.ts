@@ -169,6 +169,8 @@ export interface BridgeSkill {
 export interface Bridge {
   readonly id: string;
   readonly platform: string;
+  /** Bridge version — the pinned unit for lockfile closures (SP8b). */
+  readonly version: string;
   readonly registry: BridgeRegistry;
   readonly postRules: readonly AssetRule[];
   /** Optional Bridge Skill fragment (SP8a). Consumed only by skill-template. */

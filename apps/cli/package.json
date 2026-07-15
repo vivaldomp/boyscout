@@ -18,6 +18,7 @@
     "@boyscout/determinism": "workspace:*",
     "@boyscout/dialect": "workspace:*",
     "@boyscout/guardrails": "workspace:*",
+    "@boyscout/lockfile": "workspace:*",
     "@boyscout/questionnaire": "workspace:*",
     "@boyscout/runtime": "workspace:*",
     "@boyscout/schemas": "workspace:*",

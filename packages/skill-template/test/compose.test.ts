@@ -14,6 +14,7 @@ function stubBridge(id: string, skill?: BridgeSkill): Bridge {
   return {
     id,
     platform: "test",
+    version: "0.0.0",
     registry: emptyRegistry,
     postRules: [],
     ...(skill ? { skill } : {}),
@@ -34,7 +35,9 @@ describe("composeSkill", () => {
       name: "boyscout",
       description: "governed generation",
     });
-    expect(md.startsWith("---\nname: boyscout\ndescription: governed generation\n---")).toBe(true);
+    expect(md.startsWith('---\nname: "boyscout"\ndescription: "governed generation"\n---')).toBe(
+      true,
+    );
   });
 
   it("renders sections in fixed order", () => {
