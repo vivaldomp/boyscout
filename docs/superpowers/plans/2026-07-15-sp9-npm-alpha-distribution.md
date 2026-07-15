@@ -824,8 +824,12 @@ Expected: `200`. If it returns `404`, `docs/logo.png` has not reached `master` y
 
 - [ ] **Step 5: Format and commit**
 
+Biome does not process Markdown — `biome format` on a `.md` file exits 1 with
+"No files were processed" (verified against Biome 2.5.3). This task adds no
+JS/TS, so there is nothing to format; `pnpm format:check` ignores `.md` and
+stays green.
+
 ```bash
-node_modules/.bin/biome format --write README.md CONTRIBUTING.md
 git add README.md LICENSE CONTRIBUTING.md
 git commit -m "docs: add README, MIT LICENSE, and CONTRIBUTING
 
