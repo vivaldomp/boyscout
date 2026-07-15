@@ -84,6 +84,9 @@ importers:
       '@boyscout/guardrails':
         specifier: workspace:*
         version: link:../../packages/guardrails
+      '@boyscout/lockfile':
+        specifier: workspace:*
+        version: link:../../packages/lockfile
       '@boyscout/questionnaire':
         specifier: workspace:*
         version: link:../../packages/questionnaire
