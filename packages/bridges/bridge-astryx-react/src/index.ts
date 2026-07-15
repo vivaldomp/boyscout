@@ -40,6 +40,7 @@ export const registry: BridgeRegistry = {
 export const bridge: Bridge = {
   id: "astryx-react",
   platform: "react",
+  version: "0.1.0",
   registry,
   postRules: [astryxOnly, biomeLint],
   skill,

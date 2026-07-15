@@ -25,6 +25,7 @@ test("Bridge contract shapes", () => {
   const bridge: Bridge = {
     id: "astryx-react",
     platform: "react",
+    version: "0.0.0",
     registry,
     postRules: [rule],
   };

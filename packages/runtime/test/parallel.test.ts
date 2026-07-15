@@ -5,6 +5,7 @@ import { buildAssets, buildAssetsParallel, loadConfig } from "../src/index.js";
 const fakeBridge: Bridge = {
   id: "astryx-react",
   platform: "react",
+  version: "0.0.0",
   registry: {
     capabilities: ["component"],
     nodeTypesFor: (c) => (c === "component" ? ["Card", "Text"] : []),
@@ -76,6 +77,7 @@ const HEAVY_LINES = 300;
 const heavyBridge: Bridge = {
   id: "astryx-react",
   platform: "react",
+  version: "0.0.0",
   registry: {
     capabilities: ["component"],
     nodeTypesFor: (c) => (c === "component" ? ["Card"] : []),

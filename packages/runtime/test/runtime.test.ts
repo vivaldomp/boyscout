@@ -9,6 +9,7 @@ import { GateError, buildAssets, generate, loadConfig } from "../src/index.js";
 const fakeBridge: Bridge = {
   id: "astryx-react",
   platform: "react",
+  version: "0.0.0",
   registry: {
     capabilities: ["component"],
     nodeTypesFor: (c: string): readonly string[] => (c === "component" ? ["Card", "Text"] : []),

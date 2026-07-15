@@ -40,6 +40,7 @@ export const registry: BridgeRegistry = {
 export const bridge: Bridge = {
   id: "material",
   platform: "angular",
+  version: "0.1.0",
   registry,
   postRules: [materialOnly, biomeLint],
   skill,

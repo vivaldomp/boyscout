@@ -14,6 +14,7 @@ function stubBridge(id: string, skill?: BridgeSkill): Bridge {
   return {
     id,
     platform: "test",
+    version: "0.0.0",
     registry: emptyRegistry,
     postRules: [],
     ...(skill ? { skill } : {}),
