@@ -6,6 +6,7 @@ import { FORM_NODE_TYPES, formProvider } from "./form-provider.js";
 import { HTTP_NODE_TYPES, httpProvider } from "./http-provider.js";
 import { materialOnly } from "./material-only.js";
 import { ROUTE_NODE_TYPES, routeProvider } from "./route-provider.js";
+import { skill } from "./skill.js";
 
 export { CATALOG, COMPONENTS } from "./catalog.js";
 export { verifyMaterialCatalog } from "./verify-catalog.js";
@@ -41,4 +42,5 @@ export const bridge: Bridge = {
   platform: "angular",
   registry,
   postRules: [materialOnly, biomeLint],
+  skill,
 };

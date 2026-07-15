@@ -6,6 +6,7 @@ import { HTTP_NODE_TYPES, httpProvider } from "./http-provider.js";
 import { paramsFor } from "./params.js";
 import { componentProvider } from "./provider.js";
 import { SERVICE_NODE_TYPES, serviceProvider } from "./service-provider.js";
+import { skill } from "./skill.js";
 import { STORE_NODE_TYPES, storeProvider } from "./store-provider.js";
 
 export { COMPONENTS } from "./catalog.js";
@@ -41,4 +42,5 @@ export const bridge: Bridge = {
   platform: "react",
   registry,
   postRules: [astryxOnly, biomeLint],
+  skill,
 };

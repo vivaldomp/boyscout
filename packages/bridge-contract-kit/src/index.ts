@@ -62,6 +62,24 @@ export function runRegistryContract(
 }
 
 /**
+ * Skill-fragment contract (SP8a): the bridge exposes a `skill` with all five
+ * typed sections present and non-empty (after trim).
+ */
+export function runSkillContract(bridge: Bridge, opts: { expectedId: string }): void {
+  const sections = ["conventions", "imports", "tokens", "architecture", "naming"] as const;
+  describe(`${opts.expectedId} skill contract`, () => {
+    it("exposes a skill fragment", () => {
+      expect(bridge.skill).toBeDefined();
+    });
+    for (const section of sections) {
+      it(`has non-empty ${section}`, () => {
+        expect((bridge.skill?.[section] ?? "").trim().length).toBeGreaterThan(0);
+      });
+    }
+  });
+}
+
+/**
  * Seam contract (D2d): the generated scaffold pins the human logic — the
  * generated durable stub compiles (0 diagnostics), a drifted stub does not.
  * Temp fixtures are written under `pkgRoot` so framework types resolve via
