@@ -227,6 +227,19 @@ importers:
         specifier: workspace:*
         version: link:../schemas
 
+  packages/lockfile:
+    dependencies:
+      '@boyscout/determinism':
+        specifier: workspace:*
+        version: link:../determinism
+      '@boyscout/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+    devDependencies:
+      '@boyscout/bridge-astryx-react':
+        specifier: workspace:*
+        version: link:../bridges/bridge-astryx-react
+
   packages/planner:
     dependencies:
       '@boyscout/determinism':
