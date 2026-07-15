@@ -4,11 +4,12 @@ import { bridge as astryxBridge } from "@boyscout/bridge-astryx-react";
 import { canonicalJson, writeBytes } from "@boyscout/determinism";
 import { composeSkill } from "@boyscout/skill-template";
 
-/** The config `init` seeds: the Astryx/React bridge, declarative `component` tier only. */
+/** The config `init` seeds: the Astryx/React bridge, declarative `component` and logic-bearing `service` tiers. */
 const CONFIG_YAML = `platform: react
 bridge: astryx-react
 capabilities:
   - component
+  - service
 `;
 
 /**
@@ -35,6 +36,23 @@ const SEED_SPEC = {
               { type: "Text", props: { text: "Member since 2026", type: "body" } },
               { type: "Button", props: { text: "Edit", variant: "primary" } },
             ],
+          },
+        ],
+      },
+    },
+    {
+      id: "user-service",
+      capability: "service",
+      approved: true,
+      annotations: {},
+      props: {},
+      tree: {
+        type: "Service",
+        props: { name: "UserService" },
+        children: [
+          {
+            type: "Method",
+            props: { name: "getUsers", params: "", returns: "Promise<string[]>" },
           },
         ],
       },

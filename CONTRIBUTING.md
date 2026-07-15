@@ -35,29 +35,30 @@ cd boyscout
 pnpm install
 ```
 
-There is **no build step for the packages.** All 15 workspace packages export `./src/index.ts` directly and run through `tsx`. Only `apps/cli` has a build, and only because it is the published artifact.
+There is **no build step for the packages.** All 15 workspace packages export `./src/index.ts` directly and run through `tsx`. Only the two apps build: `apps/cli`, because it is the published artifact, and `apps/boyscout-ui`, because a browser needs a bundle.
 
 ## Running Locally
 
 Run the CLI straight from TypeScript source:
+
+`pnpm --filter` resolves against the workspace root, so run every command from the repo root and point the CLI at the scratch directory with flags rather than `cd`-ing into it:
 
 ```bash
 # scaffold a project in a scratch directory
 pnpm --filter @boyscout/cli exec tsx src/bin.ts init --root /tmp/demo
 
 # generate
-cd /tmp/demo
-pnpm --filter @boyscout/cli exec tsx src/bin.ts generate
+pnpm --filter @boyscout/cli exec tsx src/bin.ts generate --spec /tmp/demo/boyscout-spec.json --config /tmp/demo/boyscout.config.yaml
 
 # verify the lock has not drifted
-pnpm --filter @boyscout/cli exec tsx src/bin.ts generate --check
+pnpm --filter @boyscout/cli exec tsx src/bin.ts generate --spec /tmp/demo/boyscout-spec.json --config /tmp/demo/boyscout.config.yaml --check
 ```
 
 The browser authoring loop needs the UI bundle built first:
 
 ```bash
 pnpm --filter boyscout-ui build
-pnpm --filter @boyscout/cli exec tsx src/bin.ts author --openui ./boyscout.openui
+pnpm --filter @boyscout/cli exec tsx src/bin.ts author --openui /tmp/demo/boyscout.openui
 ```
 
 `author` binds loopback-only (`127.0.0.1`) and mints a CSPRNG session token per run — see §21 of `docs/FIRST-SPEC.md` and `docs/security-checklist.md`. Overriding `--host` is an explicit, deliberate act.

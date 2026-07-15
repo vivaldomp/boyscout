@@ -50,17 +50,29 @@ describe("boyscout init", () => {
     expect(second.skipped).toEqual(["boyscout.config.yaml", "boyscout-spec.json", SKILL]);
   });
 
-  it("seeds a project that actually generates", () => {
+  it("seeds a project that actually generates, including the logic-bearing seam", () => {
     const dir = emptyProject();
     init(dir);
-    const code = main([
+    const genArgs = [
       "generate",
       "--spec",
       join(dir, "boyscout-spec.json"),
       "--config",
       join(dir, "boyscout.config.yaml"),
-    ]);
+    ];
+    const code = main(genArgs);
     expect(code).toBe(0);
+
+    const runningService = join(dir, ".running", "services", "UserService.ts");
+    const durableService = join(dir, "src", "services", "user-service.ts");
+    expect(existsSync(runningService)).toBe(true);
+    expect(existsSync(durableService)).toBe(true);
+
+    // The durable file is created-if-absent (D2b): regeneration must never overwrite it.
+    const sentinel = "// hand-authored logic — must survive regeneration\n";
+    writeFileSync(durableService, sentinel);
+    expect(main(genArgs)).toBe(0);
+    expect(readFileSync(durableService, "utf8")).toBe(sentinel);
   });
 
   it("main routes the init command and exits 0", () => {

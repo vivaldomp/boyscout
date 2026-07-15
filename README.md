@@ -79,15 +79,16 @@ npx @boyscout/cli@alpha generate
 ```
 
 ```
-src/components/UserCard.tsx
-.running/UserCard.scaffold.tsx
+.running/UserCard.tsx
+.running/services/UserService.ts
+src/services/user-service.ts
 boyscout.lock
 ```
 
 Three things just happened:
 
-1. **`.running/UserCard.scaffold.tsx`** is generated, disposable, and overwritten on every run — the Runtime owns it.
-2. **`src/components/UserCard.tsx`** is yours. It is created once and **never overwritten**. Put your logic there; regenerate as often as you like.
+1. **`.running/`** files are generated, disposable, and overwritten on every run — the Runtime owns them.
+2. **`src/services/user-service.ts`** is yours. It is created once and **never overwritten**. Put your logic there; regenerate as often as you like.
 3. **`boyscout.lock`** pins the closure that produced those bytes. Commit it.
 
 Now ask Claude Code for something of your own — *"add a signup form with email and password"* — and run `generate` again. The agent writes the spec; the Runtime decides how it is built.
