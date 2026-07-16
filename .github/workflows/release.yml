@@ -30,6 +30,19 @@ jobs:
       - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest
 
+      # Assert the upgrade actually took effect on the npm that will run `publish`. The install
+      # above prints no version, so a silently-ineffective upgrade would surface 10 steps later
+      # as an opaque registry E404 rather than as a failure here.
+      - name: Verify the publish host meets the trusted-publishing floor
+        run: |
+          NPM_V="$(npm --version)"
+          NODE_V="$(node --version | sed 's/^v//')"
+          echo "node $NODE_V, npm $NPM_V"
+          [ "$(printf '11.5.1\n%s\n' "$NPM_V" | sort -V | head -1)" = "11.5.1" ] \
+            || { echo "npm $NPM_V is below the 11.5.1 trusted-publishing floor" >&2; exit 1; }
+          [ "$(printf '22.14.0\n%s\n' "$NODE_V" | sort -V | head -1)" = "22.14.0" ] \
+            || { echo "node $NODE_V is below the 22.14.0 trusted-publishing floor" >&2; exit 1; }
+
       - run: pnpm install --frozen-lockfile
 
       - name: Verify tag matches the package version
@@ -67,8 +80,17 @@ jobs:
         working-directory: apps/cli
         run: npm pack --dry-run
 
+      # NODE_AUTH_TOKEN must be empty for OIDC to engage. `setup-node` with `registry-url`
+      # writes an .npmrc containing `_authToken=${NODE_AUTH_TOKEN}` and exports a placeholder
+      # value (literally XXXXX-XXXXX-XXXXX-XXXXX) when no token is supplied. npm finds that
+      # token, authenticates with it instead of performing the OIDC exchange, and the registry
+      # rejects it as anonymous — reported as a misleading `E404 PUT ... Not found` rather than
+      # a 403, because npm will not confirm a package exists to a caller that cannot see it.
+      # Clearing it makes the configured token falsy, so npm takes the OIDC path.
       - name: Publish to npm
         working-directory: apps/cli
+        env:
+          NODE_AUTH_TOKEN: ""
         run: npm publish --access public --tag alpha
 
       - name: Create the GitHub Release
