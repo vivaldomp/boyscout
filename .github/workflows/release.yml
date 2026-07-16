@@ -92,6 +92,51 @@ jobs:
         working-directory: apps/cli
         run: npm pack --dry-run
 
+      # Reproduce npm's OIDC handshake (lib/utils/oidc.js) step by step so the registry states
+      # why it refuses, instead of npm swallowing the reason and reporting a bare ENEEDAUTH.
+      # Prints outcomes only — never the request token, the id_token, or an exchanged token.
+      # Never blocks the publish: this is diagnosis, not a gate.
+      - name: OIDC preflight diagnostics
+        continue-on-error: true
+        run: |
+          echo "GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL:   ${ACTIONS_ID_TOKEN_REQUEST_URL:+SET}${ACTIONS_ID_TOKEN_REQUEST_URL:-UNSET}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+SET}${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-UNSET}"
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "-> id-token:write is not effective; npm skips OIDC at oidc.js:63"
+            exit 0
+          fi
+
+          # Step 1: ask GitHub for an id_token with npm's expected audience.
+          ID_TOKEN="$(curl -sS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" \
+            | jq -r '.value // empty')"
+          if [ -z "$ID_TOKEN" ]; then
+            echo "-> GitHub issued no id_token; npm skips OIDC at oidc.js:99"
+            exit 0
+          fi
+          echo "id_token: obtained (${#ID_TOKEN} chars)"
+
+          # The claims npm's trusted-publisher config is matched against. Not secret: this is
+          # the public payload of a token scoped to npm, and it is exactly what must line up
+          # with the repository/workflow recorded on npmjs.com.
+          echo "--- id_token claims (repository / workflow / ref) ---"
+          echo "$ID_TOKEN" | cut -d. -f2 | tr '_-' '/+' \
+            | { read -r p; printf '%s' "$p$(printf '%*s' $(( (4 - ${#p} % 4) % 4 )) '' | tr ' ' '=')"; } \
+            | base64 -d 2>/dev/null \
+            | jq -r '{repository, workflow_ref, job_workflow_ref, ref, environment, aud}' 2>/dev/null \
+            || echo "(could not decode claims)"
+
+          # Step 2: the exchange npm performs at oidc.js:118. Its error body is the answer.
+          echo "--- token exchange ---"
+          CODE="$(curl -sS -o exchange.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $ID_TOKEN" \
+            "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@boyscoutdev%2Fcli")"
+          echo "exchange: HTTP $CODE"
+          jq -r 'if .token then "-> exchange SUCCEEDED (token withheld from log)" else "-> \(.message // .error // "no message")" end' \
+            exchange.json 2>/dev/null || echo "(unparseable response)"
+          rm -f exchange.json
+
       # Trusted publishing engages only when NO token is configured — npm takes the token path
       # whenever one exists, and an empty string still counts. Both failure modes are opaque
       # (E404 with a bad token, ENEEDAUTH with an empty one), so assert the precondition here
@@ -107,7 +152,11 @@ jobs:
             echo "NPM_CONFIG_USERCONFIG is set — an .npmrc may configure a token" >&2
             exit 1
           }
-          npm publish --access public --tag alpha
+          # --loglevel verbose surfaces npm's own OIDC reasoning. lib/utils/oidc.js is
+          # documented to never throw ("OIDC is always an optional feature"), so every failure
+          # path returns undefined after logging at verbose/silly and publish falls through to
+          # a bare ENEEDAUTH. Without this flag the actual cause is never printed.
+          npm publish --access public --tag alpha --loglevel verbose
 
       - name: Create the GitHub Release
         env:
