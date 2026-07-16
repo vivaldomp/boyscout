@@ -11,7 +11,7 @@ import {
   stripFrontmatter,
 } from "./agent-targets.js";
 import { bridgeFor, type Stack } from "./bridges-map.js";
-import { resolveInitOptions } from "./init-prompts.js";
+import { type InitCliOptions, resolveInitOptions } from "./init-prompts.js";
 import { workflowSkill } from "./workflow-skill.js";
 
 /** Resolved answers that fully determine what `init` writes. */
@@ -157,13 +157,12 @@ export function init(root: string, opts: InitOptions = DEFAULT_INIT_OPTIONS): In
   return { created, skipped };
 }
 
-/** `boyscout init [--root .] [--stack react|angular] [--agent claude|cursor|generic] [--capabilities a,b] [--scope local|global] [--example] [--yes]` */
-export async function initCommand(argv: string[]): Promise<number> {
-  const i = argv.indexOf("--root");
-  const root = i >= 0 && argv[i + 1] ? (argv[i + 1] as string) : ".";
+/** Run `init` from commander-parsed options; prompts fill any gaps on a TTY. Returns an exit code. */
+export async function initCommand(cli: InitCliOptions): Promise<number> {
+  const root = cli.root ?? ".";
   let opts: InitOptions;
   try {
-    opts = await resolveInitOptions(argv);
+    opts = await resolveInitOptions(cli, { isTty: Boolean(process.stdin.isTTY) });
   } catch (err) {
     process.stderr.write(`error: ${(err as Error).message}\n`);
     return 1;
