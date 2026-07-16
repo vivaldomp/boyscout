@@ -40,7 +40,7 @@ This is the one file you edit. It is the "what to build". Shape:
 - \`boyscout generate\` — reads the spec + \`boyscout.config.yaml\`, emits code, writes \`boyscout.lock\`. Run this after every spec edit.
 - \`boyscout generate --check\` — regenerates and fails (exit 1) if output drifts from \`boyscout.lock\`. Use in CI / before committing.
 - \`boyscout author\` — starts the local browser authoring loop (preview a \`.openui\` design, approve it into the spec).
-- \`boyscout init\` — scaffolds config, spec, and these skills (create-if-absent; safe to re-run).
+- \`boyscout init\` — scaffolds config, spec, and the boyscout skill (create-if-absent; safe to re-run).
 
 A guardrail violation prints \`422 gate failed\` and emits **nothing** — fix the spec and re-run; non-conforming code never reaches the repo.
 
