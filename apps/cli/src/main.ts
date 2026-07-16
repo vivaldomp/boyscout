@@ -31,8 +31,8 @@ function flag(argv: string[], name: string, fallback: string): string {
   return i >= 0 && argv[i + 1] ? (argv[i + 1] as string) : fallback;
 }
 
-/** `boyscout generate [--spec ./boyscout-spec.json] [--config ./boyscout.config.yaml]`. Returns an exit code. */
-export function main(argv: string[]): number {
+/** `boyscout generate [--spec ./boyscout-spec.json] [--config ./boyscout.config.yaml]`. Returns an exit code (async for `init`, which may prompt). */
+export function main(argv: string[]): number | Promise<number> {
   const command = argv[0];
   if (command === "init") return initCommand(argv.slice(1));
   if (command === "author") return authorCommand(argv.slice(1));
