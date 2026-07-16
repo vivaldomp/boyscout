@@ -1,20 +1,42 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { bridge as astryxBridge } from "@boyscout/bridge-astryx-react";
+import { dirname, join, relative } from "node:path";
 import { canonicalJson, writeBytes } from "@boyscout/determinism";
+import type { Bridge } from "@boyscout/schemas";
 import { composeSkill } from "@boyscout/skill-template";
+import {
+  type Agent,
+  type AgentSkill,
+  type OutFile,
+  type Scope,
+  skillFiles,
+  stripFrontmatter,
+} from "./agent-targets.js";
+import { bridgeFor, type Stack } from "./bridges-map.js";
+import { resolveInitOptions } from "./init-prompts.js";
+import { workflowSkill } from "./workflow-skill.js";
 
-/** The config `init` seeds: the Astryx/React bridge, declarative `component` and logic-bearing `service` tiers. */
-const CONFIG_YAML = `platform: react
-bridge: astryx-react
-capabilities:
-  - component
-  - service
-`;
+/** Resolved answers that fully determine what `init` writes. */
+export interface InitOptions {
+  readonly stack: Stack;
+  readonly agent: Agent;
+  /** Enabled capabilities; empty means "all of the stack's bridge capabilities". */
+  readonly capabilities: readonly string[];
+  readonly scope: Scope;
+  /** Seed the demo spec (React/Astryx only) instead of an empty one. */
+  readonly example: boolean;
+}
+
+export const DEFAULT_INIT_OPTIONS: InitOptions = {
+  stack: "react",
+  agent: "claude",
+  capabilities: [],
+  scope: "local",
+  example: false,
+};
 
 /**
- * Minimal valid Specification. `metadata.bridge`/`platform` must equal the bridge's or the
- * Runtime rejects it (packages/runtime/src/index.ts:71); `checksum` is not validated.
+ * Demo spec kept behind `--example` (React/Astryx only — its node types belong to that bridge).
+ * A UserCard component + a UserService service, enough for `generate` to emit both tiers.
  */
 const SEED_SPEC = {
   version: "1",
@@ -72,39 +94,94 @@ export interface InitResult {
   readonly skipped: readonly string[];
 }
 
+/** `platform`/`bridge`/`capabilities` conforming to the BoyscoutConfig schema. */
+function configYaml(bridge: Bridge, capabilities: readonly string[]): string {
+  const caps = capabilities.map((c) => `  - ${c}`).join("\n");
+  return `platform: ${bridge.platform}\nbridge: ${bridge.id}\ncapabilities:\n${caps}\n`;
+}
+
+/** A minimal, schema-valid spec with no features — the default `init` seed. */
+function emptySpec(bridge: Bridge) {
+  return {
+    version: "1",
+    features: [],
+    metadata: { bridge: bridge.id, platform: bridge.platform, checksum: "" },
+  };
+}
+
+/** Display label: project-relative when inside `root`, else the absolute path (global scope). */
+function labelFor(root: string, abs: string): string {
+  const rel = relative(root, abs);
+  return rel && !rel.startsWith("..") ? rel : abs;
+}
+
 /**
- * Scaffold a BoyScout project under `root`. Create-if-absent (D2b): an existing file is never
- * overwritten, so `init` is safe to re-run in a live project. Only the configured bridge's
- * knowledge is composed — seeding Material conventions into a React project would misinform
- * the agent.
+ * Scaffold a BoyScout project under `root` from resolved `opts`. Create-if-absent (D2b): an
+ * existing file is never overwritten, so `init` is safe to re-run in a live project. Config,
+ * spec, and the bridge-conventions + CLI-workflow skills are all derived from the selected
+ * bridge — seeding another bridge's knowledge would misinform the agent.
  */
-export function init(root: string): InitResult {
-  const files: ReadonlyArray<readonly [string, string]> = [
-    ["boyscout.config.yaml", CONFIG_YAML],
-    ["boyscout-spec.json", canonicalJson(SEED_SPEC)],
-    [join(".claude", "skills", "boyscout", "SKILL.md"), composeSkill([astryxBridge], SKILL_META)],
+export function init(root: string, opts: InitOptions = DEFAULT_INIT_OPTIONS): InitResult {
+  const bridge = bridgeFor(opts.stack);
+  const capabilities =
+    opts.capabilities.length > 0 ? opts.capabilities : [...bridge.registry.capabilities];
+  const spec = opts.example && opts.stack === "react" ? SEED_SPEC : emptySpec(bridge);
+
+  const conventions: AgentSkill = {
+    name: SKILL_META.name,
+    description: SKILL_META.description,
+    bodyMarkdown: stripFrontmatter(composeSkill([bridge], SKILL_META)),
+  };
+  const workflow = workflowSkill({
+    stack: opts.stack,
+    bridgeId: bridge.id,
+    platform: bridge.platform,
+    capabilities,
+  });
+
+  const files: OutFile[] = [
+    { abs: join(root, "boyscout.config.yaml"), content: configYaml(bridge, capabilities) },
+    { abs: join(root, "boyscout-spec.json"), content: canonicalJson(spec) },
+    ...skillFiles(root, opts.agent, opts.scope, [conventions, workflow]),
   ];
 
   const created: string[] = [];
   const skipped: string[] = [];
-  for (const [rel, content] of files) {
-    const abs = join(root, rel);
+  for (const { abs, content } of files) {
+    const label = labelFor(root, abs);
     if (existsSync(abs)) {
-      skipped.push(rel);
+      skipped.push(label);
       continue;
     }
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, writeBytes(content));
-    created.push(rel);
+    created.push(label);
   }
   return { created, skipped };
 }
 
-/** `boyscout init [--root .]` */
-export function initCommand(argv: string[]): number {
+/** `boyscout init [--root .] [--stack react|angular] [--agent claude|cursor|generic] [--capabilities a,b] [--scope local|global] [--example] [--yes]` */
+export async function initCommand(argv: string[]): Promise<number> {
   const i = argv.indexOf("--root");
   const root = i >= 0 && argv[i + 1] ? (argv[i + 1] as string) : ".";
-  const { created, skipped } = init(root);
+  let opts: InitOptions;
+  try {
+    opts = await resolveInitOptions(argv);
+  } catch (err) {
+    process.stderr.write(`error: ${(err as Error).message}\n`);
+    return 1;
+  }
+
+  if (opts.example && opts.stack !== "react") {
+    process.stdout.write("note: --example is React/Astryx only; wrote an empty spec instead\n");
+  }
+  if (opts.scope === "global" && opts.agent !== "claude") {
+    process.stdout.write(
+      `note: global scope only applies to Claude Code; wrote ${opts.agent} files project-local\n`,
+    );
+  }
+
+  const { created, skipped } = init(root, opts);
   for (const rel of created) process.stdout.write(`created ${rel}\n`);
   for (const rel of skipped) process.stdout.write(`exists, skipped ${rel}\n`);
   return 0;

@@ -37,7 +37,7 @@ BoyScout splits the problem in two. **AI decides what to build; the Runtime deci
 
 ### Install
 
-BoyScout is built to be driven by a coding agent. `init` writes a `SKILL.md` that teaches **Claude Code** your bridge's conventions, so the agent proposes specs that fit your standards:
+BoyScout is built to be driven by a coding agent. `init` asks a few questions — stack (React/Astryx or Angular/Material), coding agent (Claude Code, Cursor, or a generic `AGENTS.md`), which capabilities to enable, and scope — then writes two skills: one teaching your bridge's **conventions**, one teaching the agent how to **drive the CLI**. Pass `--yes` (or any answer as a flag, e.g. `--stack angular`) to skip the prompts:
 
 ```bash
 npx @boyscoutdev/cli@alpha init
@@ -47,7 +47,10 @@ npx @boyscoutdev/cli@alpha init
 created boyscout.config.yaml
 created boyscout-spec.json
 created .claude/skills/boyscout/SKILL.md
+created .claude/skills/boyscout-workflow/SKILL.md
 ```
+
+The spec starts empty — your agent fills it in. Add `--example` to seed a demo component + service you can generate immediately.
 
 <details>
 <summary><strong>Other install methods</strong></summary>
@@ -72,9 +75,10 @@ Then run `boyscout` instead of `npx @boyscoutdev/cli@alpha`.
 
 ### Your first design
 
-`init` seeds a project with a small component and a service. Generate it:
+`init --example` seeds a project with a small component and a service. Generate it:
 
 ```bash
+npx @boyscoutdev/cli@alpha init --example
 npx @boyscoutdev/cli@alpha generate
 ```
 
