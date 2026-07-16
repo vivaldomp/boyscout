@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_INIT_OPTIONS, init, type InitOptions } from "../src/init.js";
 import { main } from "../src/main.js";
 
-const CONVENTIONS = join(".claude", "skills", "boyscout", "SKILL.md");
-const WORKFLOW = join(".claude", "skills", "boyscout-workflow", "SKILL.md");
+const MAIN_SKILL = join(".claude", "skills", "boyscout", "SKILL.md");
+const REFERENCE = join(".claude", "skills", "boyscout", "reference", "bridge-conventions.md");
 
 function emptyProject(): string {
   return mkdtempSync(join(tmpdir(), "bs-init-"));
@@ -17,15 +17,15 @@ function opts(over: Partial<InitOptions> = {}): InitOptions {
 }
 
 describe("boyscout init", () => {
-  it("creates config, an empty seed spec, and both Claude Code skills by default", () => {
+  it("creates config, an empty seed spec, the main skill, and the bundled reference", () => {
     const dir = emptyProject();
     const result = init(dir, opts());
 
     expect(result.created).toEqual([
       "boyscout.config.yaml",
       "boyscout-spec.json",
-      CONVENTIONS,
-      WORKFLOW,
+      MAIN_SKILL,
+      REFERENCE,
     ]);
     expect(result.skipped).toEqual([]);
 
@@ -34,17 +34,17 @@ describe("boyscout init", () => {
     expect(spec.metadata).toMatchObject({ bridge: "astryx-react", platform: "react" });
   });
 
-  it("composes the bridge conventions and a CLI-workflow skill", () => {
+  it("the main skill is the product skill; conventions are a bundled reference it points to", () => {
     const dir = emptyProject();
     init(dir, opts());
 
-    const conventions = readFileSync(join(dir, CONVENTIONS), "utf8");
-    expect(conventions).toContain('name: "boyscout"');
-    expect(conventions).toContain("### astryx-react");
+    const skill = readFileSync(join(dir, MAIN_SKILL), "utf8");
+    expect(skill).toContain('name: "boyscout"');
+    expect(skill).toContain("boyscout generate");
+    expect(skill).toContain("reference/bridge-conventions.md");
 
-    const workflow = readFileSync(join(dir, WORKFLOW), "utf8");
-    expect(workflow).toContain('name: "boyscout-workflow"');
-    expect(workflow).toContain("boyscout generate");
+    const reference = readFileSync(join(dir, REFERENCE), "utf8");
+    expect(reference).toContain("### astryx-react");
   });
 
   it("angular stack selects the Material bridge in config and spec metadata", () => {
@@ -67,18 +67,24 @@ describe("boyscout init", () => {
     expect(config).not.toContain("  - service");
   });
 
-  it("cursor agent writes .mdc rules; generic writes AGENTS.md", () => {
+  it("cursor writes a single .mdc rule with conventions inlined; generic writes AGENTS.md", () => {
     const cursorDir = emptyProject();
     const cursor = init(cursorDir, opts({ agent: "cursor" }));
-    expect(cursor.created).toContain(join(".cursor", "rules", "boyscout.mdc"));
-    expect(cursor.created).toContain(join(".cursor", "rules", "boyscout-workflow.mdc"));
+    expect(cursor.created).toEqual([
+      "boyscout.config.yaml",
+      "boyscout-spec.json",
+      join(".cursor", "rules", "boyscout.mdc"),
+    ]);
+    const mdc = readFileSync(join(cursorDir, ".cursor", "rules", "boyscout.mdc"), "utf8");
+    expect(mdc).toContain("## Bridge conventions");
+    expect(mdc).toContain("### astryx-react");
 
     const genericDir = emptyProject();
     const generic = init(genericDir, opts({ agent: "generic" }));
     expect(generic.created).toContain("AGENTS.md");
     const agents = readFileSync(join(genericDir, "AGENTS.md"), "utf8");
     expect(agents).toContain("## boyscout");
-    expect(agents).toContain("## boyscout-workflow");
+    expect(agents).toContain("## Bridge conventions");
   });
 
   it("--example seeds the demo spec (React only)", () => {
@@ -95,7 +101,7 @@ describe("boyscout init", () => {
     const result = init(dir, opts());
 
     expect(result.skipped).toEqual(["boyscout.config.yaml"]);
-    expect(result.created).toEqual(["boyscout-spec.json", CONVENTIONS, WORKFLOW]);
+    expect(result.created).toEqual(["boyscout-spec.json", MAIN_SKILL, REFERENCE]);
     expect(readFileSync(join(dir, "boyscout.config.yaml"), "utf8")).toBe("platform: mine\n");
   });
 
@@ -107,8 +113,8 @@ describe("boyscout init", () => {
     expect(second.skipped).toEqual([
       "boyscout.config.yaml",
       "boyscout-spec.json",
-      CONVENTIONS,
-      WORKFLOW,
+      MAIN_SKILL,
+      REFERENCE,
     ]);
   });
 
@@ -129,7 +135,6 @@ describe("boyscout init", () => {
     expect(existsSync(runningService)).toBe(true);
     expect(existsSync(durableService)).toBe(true);
 
-    // The durable file is created-if-absent (D2b): regeneration must never overwrite it.
     const sentinel = "// hand-authored logic — must survive regeneration\n";
     writeFileSync(durableService, sentinel);
     expect(main(genArgs)).toBe(0);
@@ -154,6 +159,6 @@ describe("boyscout init", () => {
     const dir = emptyProject();
     expect(await main(["init", "--root", dir])).toBe(0);
     expect(existsSync(join(dir, "boyscout.config.yaml"))).toBe(true);
-    expect(existsSync(join(dir, CONVENTIONS))).toBe(true);
+    expect(existsSync(join(dir, MAIN_SKILL))).toBe(true);
   });
 });

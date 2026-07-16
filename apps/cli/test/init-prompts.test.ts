@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { resolveInitOptions } from "../src/init-prompts.js";
 
 describe("resolveInitOptions", () => {
-  it("returns defaults when no flags and no TTY (never blocks on stdin)", async () => {
-    const o = await resolveInitOptions([], { isTty: false });
+  it("returns defaults when nothing is set and there is no TTY (never blocks on stdin)", async () => {
+    const o = await resolveInitOptions({}, { isTty: false });
     expect(o).toEqual({
       stack: "react",
       agent: "claude",
@@ -13,19 +13,15 @@ describe("resolveInitOptions", () => {
     });
   });
 
-  it("reads flags without prompting", async () => {
+  it("reads parsed flags without prompting", async () => {
     const o = await resolveInitOptions(
-      [
-        "--stack",
-        "angular",
-        "--agent",
-        "cursor",
-        "--scope",
-        "global",
-        "--capabilities",
-        "component,http",
-        "--example",
-      ],
+      {
+        stack: "angular",
+        agent: "cursor",
+        scope: "global",
+        capabilities: "component,http",
+        example: true,
+      },
       { isTty: false },
     );
     expect(o).toEqual({
@@ -37,14 +33,8 @@ describe("resolveInitOptions", () => {
     });
   });
 
-  it("rejects an invalid enum flag", async () => {
-    await expect(resolveInitOptions(["--stack", "svelte"], { isTty: false })).rejects.toThrow(
-      /invalid --stack/,
-    );
-  });
-
   it("--yes on a TTY takes defaults without prompting (never opens stdin)", async () => {
-    const o = await resolveInitOptions(["--yes"], { isTty: true });
+    const o = await resolveInitOptions({ yes: true }, { isTty: true });
     expect(o.stack).toBe("react");
     expect(o.agent).toBe("claude");
   });

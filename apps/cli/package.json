@@ -1,6 +1,6 @@
 {
   "name": "@boyscoutdev/cli",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "Governed deterministic runtime for software generation — AI decides what to build, the Runtime decides how.",
   "license": "MIT",
   "type": "module",
@@ -42,7 +42,9 @@
     "@astryxdesign/core": "0.1.4",
     "@biomejs/js-api": "6.0.0",
     "@biomejs/wasm-nodejs": "2.5.3",
+    "@clack/prompts": "1.7.0",
     "@hono/node-server": "2.0.8",
+    "commander": "15.0.0",
     "eta": "4.6.0",
     "hono": "4.12.30",
     "typescript": "5.9.3",

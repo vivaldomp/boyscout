@@ -58,4 +58,13 @@ describe("boyscout generate (main)", () => {
     ]);
     expect(code).toBe(1);
   });
+
+  it("returns 1 for an unknown command", async () => {
+    expect(await main(["frobnicate"])).toBe(1);
+  });
+
+  it("returns 1 when an init enum flag is not an allowed choice", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "boyscout-cli-"));
+    expect(await main(["init", "--root", dir, "--stack", "svelte"])).toBe(1);
+  });
 });

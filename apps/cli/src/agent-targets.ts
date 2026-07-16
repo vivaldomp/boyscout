@@ -21,6 +21,11 @@ export interface OutFile {
   readonly content: string;
 }
 
+/** The bundled bridge-conventions reference the main skill points to (no frontmatter). */
+export interface SkillReference {
+  readonly bodyMarkdown: string;
+}
+
 /** Minimal YAML double-quoted scalar — safe for frontmatter values (mirrors skill-template). */
 function yamlString(s: string): string {
   return `"${s
@@ -36,35 +41,51 @@ export function stripFrontmatter(md: string): string {
 }
 
 /**
- * Map skills to the files a given agent reads, honoring scope.
+ * Map the one main skill + its bundled conventions reference to the files a given agent reads.
  *
- * `global` only means anything for Claude Code (`~/.claude/skills`); Cursor and the generic
- * `AGENTS.md` have no standard user-global rules *file*, so they always write project-local.
- * The command layer prints a note when it downgrades a requested global scope.
+ * Claude gets a real skill dir (`<name>/SKILL.md`) plus a plain `reference/bridge-conventions.md`
+ * the skill body points to — the reference is never an independently triggerable skill. Cursor and
+ * the generic `AGENTS.md` have no on-demand reference mechanism, so conventions are inlined under a
+ * `## Bridge conventions` heading. `global` scope only affects Claude (`~/.claude/skills`).
  */
 export function skillFiles(
   root: string,
   agent: Agent,
   scope: Scope,
-  skills: readonly AgentSkill[],
+  main: AgentSkill,
+  reference: SkillReference,
 ): OutFile[] {
+  const heading = "## Bridge conventions";
   switch (agent) {
     case "claude": {
       const base =
         scope === "global" ? join(homedir(), ".claude", "skills") : join(root, ".claude", "skills");
-      return skills.map((s) => ({
-        abs: join(base, s.name, "SKILL.md"),
-        content: `---\nname: ${yamlString(s.name)}\ndescription: ${yamlString(s.description)}\n---\n\n${s.bodyMarkdown}`,
-      }));
+      const dir = join(base, main.name);
+      const pointer = `${heading}\nGenerated code must follow this project's bridge conventions. Read \`reference/bridge-conventions.md\` before writing any feature tree.`;
+      return [
+        {
+          abs: join(dir, "SKILL.md"),
+          content: `---\nname: ${yamlString(main.name)}\ndescription: ${yamlString(main.description)}\n---\n\n${main.bodyMarkdown}\n\n${pointer}`,
+        },
+        {
+          abs: join(dir, "reference", "bridge-conventions.md"),
+          content: `# Bridge conventions\n\n${reference.bodyMarkdown}`,
+        },
+      ];
     }
     case "cursor":
-      return skills.map((s) => ({
-        abs: join(root, ".cursor", "rules", `${s.name}.mdc`),
-        content: `---\ndescription: ${yamlString(s.description)}\nalwaysApply: true\n---\n\n${s.bodyMarkdown}`,
-      }));
-    case "generic": {
-      const body = skills.map((s) => `## ${s.name}\n\n${s.bodyMarkdown.trim()}`).join("\n\n");
-      return [{ abs: join(root, "AGENTS.md"), content: `# BoyScout — agent guide\n\n${body}\n` }];
-    }
+      return [
+        {
+          abs: join(root, ".cursor", "rules", `${main.name}.mdc`),
+          content: `---\ndescription: ${yamlString(main.description)}\nalwaysApply: true\n---\n\n${main.bodyMarkdown}\n\n${heading}\n\n${reference.bodyMarkdown}`,
+        },
+      ];
+    case "generic":
+      return [
+        {
+          abs: join(root, "AGENTS.md"),
+          content: `# BoyScout — agent guide\n\n## ${main.name}\n\n${main.bodyMarkdown.trim()}\n\n${heading}\n\n${reference.bodyMarkdown.trim()}\n`,
+        },
+      ];
   }
 }

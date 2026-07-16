@@ -5,14 +5,13 @@ import type { Bridge } from "@boyscout/schemas";
 import { composeSkill } from "@boyscout/skill-template";
 import {
   type Agent,
-  type AgentSkill,
   type OutFile,
   type Scope,
   skillFiles,
   stripFrontmatter,
 } from "./agent-targets.js";
 import { bridgeFor, type Stack } from "./bridges-map.js";
-import { resolveInitOptions } from "./init-prompts.js";
+import { type InitCliOptions, resolveInitOptions } from "./init-prompts.js";
 import { workflowSkill } from "./workflow-skill.js";
 
 /** Resolved answers that fully determine what `init` writes. */
@@ -83,10 +82,10 @@ const SEED_SPEC = {
   metadata: { bridge: "astryx-react", platform: "react", checksum: "" },
 };
 
-const SKILL_META = {
-  name: "boyscout",
-  description:
-    "BoyScout bridge conventions for this project — the imports, tokens, architecture, and naming its generated code follows.",
+/** Nominal meta for composeSkill — only feeds the frontmatter, which is stripped for the reference body. */
+const REFERENCE_META = {
+  name: "bridge-conventions",
+  description: "BoyScout bridge conventions.",
 };
 
 export interface InitResult {
@@ -118,8 +117,8 @@ function labelFor(root: string, abs: string): string {
 /**
  * Scaffold a BoyScout project under `root` from resolved `opts`. Create-if-absent (D2b): an
  * existing file is never overwritten, so `init` is safe to re-run in a live project. Config,
- * spec, and the bridge-conventions + CLI-workflow skills are all derived from the selected
- * bridge — seeding another bridge's knowledge would misinform the agent.
+ * spec, the main skill, and the bundled bridge-conventions reference are all derived from the
+ * selected bridge — seeding another bridge's knowledge would misinform the agent.
  */
 export function init(root: string, opts: InitOptions = DEFAULT_INIT_OPTIONS): InitResult {
   const bridge = bridgeFor(opts.stack);
@@ -127,22 +126,20 @@ export function init(root: string, opts: InitOptions = DEFAULT_INIT_OPTIONS): In
     opts.capabilities.length > 0 ? opts.capabilities : [...bridge.registry.capabilities];
   const spec = opts.example && opts.stack === "react" ? SEED_SPEC : emptySpec(bridge);
 
-  const conventions: AgentSkill = {
-    name: SKILL_META.name,
-    description: SKILL_META.description,
-    bodyMarkdown: stripFrontmatter(composeSkill([bridge], SKILL_META)),
-  };
-  const workflow = workflowSkill({
+  const mainSkill = workflowSkill({
     stack: opts.stack,
     bridgeId: bridge.id,
     platform: bridge.platform,
     capabilities,
   });
+  const reference = {
+    bodyMarkdown: stripFrontmatter(composeSkill([bridge], REFERENCE_META)),
+  };
 
   const files: OutFile[] = [
     { abs: join(root, "boyscout.config.yaml"), content: configYaml(bridge, capabilities) },
     { abs: join(root, "boyscout-spec.json"), content: canonicalJson(spec) },
-    ...skillFiles(root, opts.agent, opts.scope, [conventions, workflow]),
+    ...skillFiles(root, opts.agent, opts.scope, mainSkill, reference),
   ];
 
   const created: string[] = [];
@@ -160,13 +157,12 @@ export function init(root: string, opts: InitOptions = DEFAULT_INIT_OPTIONS): In
   return { created, skipped };
 }
 
-/** `boyscout init [--root .] [--stack react|angular] [--agent claude|cursor|generic] [--capabilities a,b] [--scope local|global] [--example] [--yes]` */
-export async function initCommand(argv: string[]): Promise<number> {
-  const i = argv.indexOf("--root");
-  const root = i >= 0 && argv[i + 1] ? (argv[i + 1] as string) : ".";
+/** Run `init` from commander-parsed options; prompts fill any gaps on a TTY. Returns an exit code. */
+export async function initCommand(cli: InitCliOptions): Promise<number> {
+  const root = cli.root ?? ".";
   let opts: InitOptions;
   try {
-    opts = await resolveInitOptions(argv);
+    opts = await resolveInitOptions(cli, { isTty: Boolean(process.stdin.isTTY) });
   } catch (err) {
     process.stderr.write(`error: ${(err as Error).message}\n`);
     return 1;
