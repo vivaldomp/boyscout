@@ -1,6 +1,6 @@
 {
   "name": "@boyscoutdev/cli",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Governed deterministic runtime for software generation — AI decides what to build, the Runtime decides how.",
   "license": "MIT",
   "type": "module",
