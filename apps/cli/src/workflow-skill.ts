@@ -9,8 +9,9 @@ export interface WorkflowContext {
 }
 
 /**
- * The CLI-operating skill (FIRST-SPEC §18): teaches an agent how to *drive* BoyScout —
- * distinct from the bridge-conventions skill, which teaches how generated code should look.
+ * The main BoyScout skill (FIRST-SPEC §18): teaches an agent how to *drive* BoyScout —
+ * the bridge conventions (how generated code should look) are bundled alongside it as a
+ * reference this skill points to, not a separately triggerable skill.
  * Body only (no frontmatter); the agent-target adapter wraps it per tool.
  */
 export function workflowSkill(ctx: WorkflowContext): AgentSkill {
@@ -54,8 +55,9 @@ A guardrail violation prints \`422 gate failed\` and emits **nothing** — fix t
 4. Commit the spec, your \`src/\` code, and \`boyscout.lock\` together. Same spec + same lock = same bytes on any OS.`;
 
   return {
-    name: "boyscout-workflow",
-    description: `How to drive the BoyScout CLI — author the spec, run generate, and work the ${ctx.stack} seam.`,
+    name: "boyscout",
+    description:
+      'Use when generating, designing, diagramming, or building any frontend/UI screen, component, feature, form, or transaction — BoyScout turns a declarative spec into governed, byte-deterministic React/Angular code. Trigger on "build a screen", "create a component", "add a feature", "design a form/flow", or any UI/frontend codegen. You author the spec; the Runtime emits the code.',
     bodyMarkdown,
   };
 }
